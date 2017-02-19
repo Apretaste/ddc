@@ -1,7 +1,7 @@
 <?php
 	use Goutte\Client;
 
-	class Marti extends Service
+	class Diariodecuba extends Service
 	{
 		/**
 		 * Function executed when the service is called

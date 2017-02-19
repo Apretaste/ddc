@@ -5,7 +5,7 @@
 {/if}
 
 {foreach from=$articles item=article}
-	<b>{link href="MARTI HISTORIA {$article['link']}" caption="{$article['title']}"}</b><br/>
+	<b>{link href="DIARIODECUBA HISTORIA {$article['link']}" caption="{$article['title']}"}</b><br/>
 	{space5}
 	{$article['description']|truncate:200:" ..."}<br/>
 	<small>
@@ -17,5 +17,5 @@
 {space5}
 
 <center>
-	{button href="MARTI" caption="M&aacute;s noticias"}
+	{button href="DIARIODECUBA" caption="M&aacute;s noticias"}
 </center>
