@@ -12,6 +12,7 @@
 		public function _main(Request $request)
 		{
 			$response = new Response();
+			$response->setEmailLayout('email_diariodecuba.tpl');
 			$response->setResponseSubject("Noticias de hoy");
 			$response->createFromTemplate("allStories.tpl", $this->allStories());
 			return $response;
@@ -29,6 +30,7 @@
 			if (empty($request->query))
 			{
 				$response = new Response();
+				$response->setEmailLayout('email_diariodecuba.tpl');
 				$response->setResponseSubject("Busqueda en blanco");
 				$response->createFromText("Su busqueda parece estar en blanco, debe decirnos sobre que tema desea leer");
 				return $response;
@@ -41,10 +43,11 @@
 				return $this->respondWithError();
 			}
 
-			// error if the searche return empty
+			// error if the search returns empty
 			if(empty($articles))
 			{
 				$response = new Response();
+				$response->setEmailLayout('email_diariodecuba.tpl');
 				$response->setResponseSubject("Su busqueda no genero resultados");
 				$response->createFromText("Su busqueda <b>{$request->query}</b> no gener&oacute; ning&uacute;n resultado. Por favor cambie los t&eacute;rminos de b&uacute;squeda e intente nuevamente.");
 				return $response;
@@ -56,6 +59,7 @@
 			);
 
 			$response = new Response();
+			$response->setEmailLayout('email_diariodecuba.tpl');
 			$response->setResponseSubject("Buscar: " . $request->query);
 			$response->createFromTemplate("searchArticles.tpl", $responseContent);
 			return $response;
@@ -95,6 +99,7 @@
 			$subject = "La historia que usted pidio";
 
 			$response = new Response();
+			$response->setEmailLayout('email_diariodecuba.tpl');
 			$response->setResponseSubject($subject);
 			$response->createFromTemplate("story.tpl", $responseContent, $images);
 			return $response;
@@ -111,6 +116,7 @@
 			if (empty($request->query))
 			{
 				$response = new Response();
+				$response->setEmailLayout('email_diariodecuba.tpl');
 				$response->setResponseSubject("Categoria en blanco");
 				$response->createFromText("Su busqueda parece estar en blanco, debe decirnos sobre que categor&iacute;a desea leer");
 				return $response;
@@ -122,6 +128,7 @@
 			);
 
 			$response = new Response();
+			$response->setEmailLayout('email_diariodecuba.tpl');
 			$response->setResponseSubject("Categoria: ".$request->query);
 			$response->createFromTemplate("catArticles.tpl", $responseContent);
 			return $response;
@@ -184,7 +191,7 @@
 		{
 			// Setup crawler
 			$client = new Client();
-			$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml"); 
+			$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
 
 			// Collect articles by category
 			$articles = array();
@@ -203,7 +210,7 @@
 						$description = preg_replace($cadenaAborrar, '', $description);
 						$description = preg_replace("/<\/?a[^>]*>/", '', $description);//quitamos las <a></a>
 						$description = preg_replace("/<\/?p[^>]*>/", '', $description);//quitamos las <p></p>
-						
+
 						$author = "desconocido";
 						if ($item->filter('dc|creator')->count() > 0)
 						{
@@ -245,7 +252,7 @@
 			$articles = array();
 			$crawler->filter('channel item')->each(function($item, $i) use (&$articles)
 			{
-				
+
 				// get all parameters
 				$title = $item->filter('title')->text();
 				$link = $this->urlSplit($item->filter('link')->text());
@@ -371,9 +378,10 @@
 		 */
 		private function respondWithError()
 		{
-			error_log("WARNING: ERROR ON SERVICE MARTI");
+			error_log("WARNING: ERROR ON SERVICE DIARIO DE CUBA");
 
 			$response = new Response();
+			$response->setEmailLayout('email_diariodecuba.tpl');
 			$response->setResponseSubject("Error en peticion");
 			$response->createFromText("Lo siento pero hemos tenido un error inesperado. Enviamos una peticion para corregirlo. Por favor intente nuevamente mas tarde.");
 			return $response;
