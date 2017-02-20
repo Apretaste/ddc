@@ -78,9 +78,6 @@
 				return $response;
 			}
 
-			// get the pieces
-			$pieces = explode("/", $request->query);
-
 			// send the actual response
 			try {
 				$responseContent = $this->story($request->query);
@@ -95,9 +92,7 @@
 				$images = array($responseContent['img']);
 			}
 
-			// subject chenges when user comes from the main menu or from buscar
-			if(strlen($pieces[1]) > 5) $subject = str_replace("-", " ", ucfirst($pieces[1]));
-			else $subject = "La historia que pidio";
+			$subject = "La historia que usted pidio";
 
 			$response = new Response();
 			$response->setResponseSubject($subject);
@@ -311,7 +306,7 @@
 			$title = $crawler->filter('h1.title')->text();
 
 			// get the intro
-//div.content:nth-child(2) > p:nth-child(3)
+
 			$titleObj = $crawler->filter('div.content:nth-child(1) p:nth-child(1)');
 			$intro = $titleObj->count()>0 ? $titleObj->text() : "";
 
