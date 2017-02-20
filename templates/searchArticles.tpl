@@ -3,7 +3,7 @@
 {foreach from=$articles item=article name=arts}
 	<small><font color="gray">{$article['pubDate']|date_format|capitalize}</font></small><br/>
 	<b>{link href="DIARIODECUBA HISTORIA {$article['link']}" caption="{$article['title']}"}</b><br/>
-	{$article['description']|truncate:200:" ..."}<br/>
+	{$article['description']}<br/><!--|truncate:200:" ..." esto diario de cuba ya lo hace por nosotros-->
 	{space15}
 {/foreach}
 

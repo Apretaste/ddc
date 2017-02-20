@@ -142,29 +142,38 @@
 		{
 			// Setup crawler
 			$client = new Client();
-			$url = "http://www.martinoticias.com/s?k=".urlencode($query);
+			$url = "http://www.diariodecuba.com/search/node/".urlencode($query);
 			$crawler = $client->request('GET', $url);
 
-			// Collect saearch by category
+			// Collect saearch by term
 			$articles = array();
-			$crawler->filter('.media-block.with-date .content')->each(function($item, $i) use (&$articles)
-			{
-				// only allow news, no media or gallery
-				if($item->filter('.ico')->count()>0) return;
 
-				// get data from each row
-				$date = $item->filter('.date')->text();
-				$title = $item->filter('.title')->text();
-				$description = $item->filter('a p')->text();
+			$crawler->filter('dl.search-results.apachesolr_search-results dt.title')->each(function($item, $i) use (&$articles)
+			{
+				// get title and link from dl dt
+				$title = $item->filter('a')->text();
 				$link = $item->filter('a')->attr("href");
 
-				// store list of articles
+				// store data collected
 				$articles[] = array(
-					"pubDate" => $date,
-					"description" => $description,
+					"pubDate" => null,
+					"description" => null,
 					"title"	=> $title,
 					"link" => $link
 				);
+			});
+
+			//add remaining data
+			$i = 0;
+			$crawler->filter('dl.search-results.apachesolr_search-results dd')->each(function($item, $i) use (&$articles)
+			{
+				// get data from dl dd
+				$description = $item->filter('p.search-snippet')->text();
+				preg_match("/\d{1,2}\/\d{1,2}\/\d{4}/", $item->filter('p.search-info')->text(), $matches); //extract the date from info field
+				$date = DateTime::createFromFormat('d/m/Y', $matches[0]);
+				// store list of articles
+				$articles[$i]["description"] = $description;
+				$articles[$i++]["pubDate"] = $date;
 			});
 
 			return $articles;
@@ -180,7 +189,7 @@
 		{
 			// Setup crawler
 			$client = new Client();
-			$crawler = $client->request('GET', "http://www.martinoticias.com/api/epiqq");
+			$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml"); 
 
 			// Collect articles by category
 			$articles = array();
@@ -195,11 +204,16 @@
 						$link = $this->urlSplit($item->filter('link')->text());
 						$pubDate = $item->filter('pubDate')->text();
 						$description = $item->filter('description')->text();
+						$cadenaAborrar = "/<!-- google_ad_section_start --><!-- google_ad_section_end --><p>/";
+						$description = preg_replace($cadenaAborrar, '', $description);
+						$description = preg_replace("/<\/?a[^>]*>/", '', $description);//quitamos las <a></a>
+						$description = preg_replace("/<\/?p[^>]*>/", '', $description);//quitamos las <p></p>
+						
 						$author = "desconocido";
-						if ($item->filter('author')->count() > 0)
+						if ($item->filter('dc|creator')->count() > 0)
 						{
-							$authorString = explode(" ", trim($item->filter('author')->text()));
-							$author = substr($authorString[1], 1, strpos($authorString[1], ")") - 1) . " ({$authorString[0]})";
+							$authorString = trim($item->filter('dc|creator')->text());
+							$author = "({$authorString})";
 						}
 
 						$articles[] = array(
@@ -231,29 +245,28 @@
 			$client->setClient($guzzle);
 
 			// create a crawler
-			$crawler = $client->request('GET', "http://www.martinoticias.com/api/epiqq");
+			$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml"); //http://www.martinoticias.com/api/epiqq
 
 			$articles = array();
-			$crawler->filter('item')->each(function($item, $i) use (&$articles)
+			$crawler->filter('channel item')->each(function($item, $i) use (&$articles)
 			{
-				// get the link to the story
-				$link = $this->urlSplit($item->filter('link')->text());
-
-				// do not show anything other than content
-				$pieces = explode("/", $link);
-				if (strtoupper($pieces[0]) != "A") return;
-
-				// get all other parameters
+				
+				// get all parameters
 				$title = $item->filter('title')->text();
+				$link = $this->urlSplit($item->filter('link')->text());
 				$description = $item->filter('description')->text();
+				$cadenaAborrar = "/<!-- google_ad_section_start --><!-- google_ad_section_end --><p>/";
+				$description = preg_replace($cadenaAborrar, '', $description);
+				$description = preg_replace("/<\/?a[^>]*>/", '', $description);//quitamos las <a></a>
+				$description = preg_replace("/<\/?p[^>]*>/", '', $description);//quitamos las <p></p>
 				$pubDate = $item->filter('pubDate')->text();
 				$category = $item->filter('category')->each(function($category, $j) {return $category->text();});
 
-				if ($item->filter('author')->count() == 0) $author = "desconocido";
+				if ($item->filter('dc|creator')->count() == 0) $author = "desconocido";
 				else
 				{
-					$authorString = explode(" ", trim($item->filter('author')->text()));
-					$author = substr($authorString[1], 1, strpos($authorString[1], ")") - 1) . " ({$authorString[0]})";
+					$authorString = trim($item->filter('dc|creator')->text());
+					$author = "({$authorString})";
 				}
 
 				$categoryLink = array();
@@ -292,17 +305,18 @@
 			$client->setClient($guzzle);
 
 			// create a crawler
-			$crawler = $client->request('GET', "http://www.martinoticias.com/$query");
+			$crawler = $client->request('GET', "http://www.diariodecuba.com/$query");
 
 			// search for title
-			$title = $crawler->filter('.col-title h1')->text();
+			$title = $crawler->filter('h1.title')->text();
 
 			// get the intro
-			$titleObj = $crawler->filter('.intro p');
+//div.content:nth-child(2) > p:nth-child(3)
+			$titleObj = $crawler->filter('div.content:nth-child(1) p:nth-child(1)');
 			$intro = $titleObj->count()>0 ? $titleObj->text() : "";
 
 			// get the images
-			$imageObj = $crawler->filter('.thumb img');
+			$imageObj = $crawler->filter('div.captionimage img');
 			$imgUrl = ""; $imgAlt = ""; $img = "";
 			if ($imageObj->count() != 0)
 			{
@@ -320,7 +334,7 @@
 			}
 
 			// get the array of paragraphs of the body
-			$paragraphs = $crawler->filter('.wysiwyg p');
+			$paragraphs = $crawler->filter('div.content:nth-child(2) > p');
 			$content = array();
 			foreach ($paragraphs as $p)
 			{
@@ -334,7 +348,7 @@
 				"img" => $img,
 				"imgAlt" => $imgAlt,
 				"content" => $content,
-				"url" => "http://www.martinoticias.com/$query"
+				"url" => "http://www.diariodecuba.com/$query"
 			);
 		}
 
