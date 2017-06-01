@@ -12,7 +12,7 @@
 		public function _main(Request $request)
 		{
 			$response = new Response();
-			$response->setEmailLayout('email_diariodecuba.tpl');
+			$response->setEmailLayout('diariodecuba.tpl');
 			$response->setResponseSubject("Noticias de hoy");
 			$response->createFromTemplate("allStories.tpl", $this->allStories());
 			return $response;
