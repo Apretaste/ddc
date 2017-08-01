@@ -3,7 +3,7 @@
 	<serviceAliases>
 		<alias>diario</alias>
 	</serviceAliases>
-	<serviceDescription>Muestra los titulares de Diario de Cuba y permite leer las noticias mas recientes.</serviceDescription>
+	<serviceDescription>Muestra los titulares de Diario de Cuba y permite leer las noticias mas recientes</serviceDescription>
 	<creatorEmail>jaikerkings@yahoo.es</creatorEmail>
 	<serviceCategory>informativo</serviceCategory>
 	<serviceUsage>
@@ -17,6 +17,4 @@
 			Recibir&aacute; un email con los titulares del periodico DiarioDeCuba.com, desde el cual puede leer las noticias.
 		]]>
 	</serviceUsage>
-	<listed>0</listed>
-	<showAds>0</showAds>
 </service>
