@@ -96,11 +96,10 @@ class Diariodecuba extends Service
 			$images = array($responseContent['img']);
 		}
 
-		$subject = "La historia que usted pidio";
-
 		$response = new Response();
+		$response->setCache();
 		$response->setEmailLayout('email_diariodecuba.tpl');
-		$response->setResponseSubject($subject);
+		$response->setResponseSubject("La historia que usted pidio");
 		$response->createFromTemplate("story.tpl", $responseContent, $images);
 		return $response;
 	}
