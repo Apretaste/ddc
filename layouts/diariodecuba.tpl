@@ -73,7 +73,7 @@
 				<!--footer-->
 				<tr>
 					<td align="center" bgcolor="#F2F2F2" style="padding: 20px 0px;">
-						<small>&iquest;Tienes internet? Revisa <a href="http://diariodecuba.com">diariodecuba.com</a></small>
+						<small>Tambien puedes visitar <a href="http://diariodecuba.com" target="_blank">diariodecuba.com</a></small>
 					</td>
 				</tr>
 			</table>
