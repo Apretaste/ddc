@@ -314,7 +314,7 @@ class Diariodecuba extends Service
 		$intro = $titleObj->count()>0 ? $titleObj->text() : "";
 
 		// get the images
-		$imageObj = $crawler->filter('div.captionimage img');
+		$imageObj = $crawler->filter('figure.field-field-image-content img');
 		$imgUrl = ""; $imgAlt = ""; $img = "";
 		if ($imageObj->count() != 0)
 		{
@@ -331,7 +331,7 @@ class Diariodecuba extends Service
 		}
 
 		// get the array of paragraphs of the body
-		$paragraphs = $crawler->filter('div.content:nth-child(2) > p');
+		$paragraphs = $crawler->filter('div.node div.content p');
 		$content = array();
 		foreach ($paragraphs as $p)
 		{
