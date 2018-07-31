@@ -148,34 +148,13 @@ class Diariodecuba extends Service
 
 		// Collect saearch by term
 		$articles = array();
-		$crawler->filter('dl.search-results.apachesolr_search-results dt.title')->each(function($item, $i) use (&$articles)
-		{
-			// get title and link from dl dt
-			$title = $item->filter('a')->text();
-			$link = $item->filter('a')->attr("href");
+		$crawler->filter('div.search-result')->each(function($item) use (&$articles){
 
-			// store data collected
-			$articles[] = array(
-				"pubDate" => null,
-				"description" => null,
-				"title"	=> $title,
-				"link" => $link
-			);
+			$articles[] = ["description" => $item->filter('p.search-snippet')->text(),
+						   "title"	=> $item->filter('h1.search-title > a')->text(),
+						   "link" => str_replace('http://www.diariodecuba.com/',"",$item->filter('h1.search-title > a')->attr("href"))];
+						   
 		});
-
-		//add remaining data
-		$i = 0;
-		$crawler->filter('dl.search-results.apachesolr_search-results dd')->each(function($item, $i) use (&$articles)
-		{
-			// get data from dl dd
-			$description = $item->filter('p.search-snippet')->text();
-			preg_match("/\d{1,2}\/\d{1,2}\/\d{4}/", $item->filter('p.search-info')->text(), $matches); //extract the date from info field
-			$date = DateTime::createFromFormat('d/m/Y', $matches[0]);
-			// store list of articles
-			$articles[$i]["description"] = $description;
-			$articles[$i++]["pubDate"] = $date;
-		});
-
 		return $articles;
 	}
 
