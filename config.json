@@ -1,0 +1,8 @@
+{
+	"name": "diariodecuba",
+	"version": "1",
+	"description": "Muestra los titulares de Diario de Cuba y permite leer las noticias mas recientes",
+	"category": "informativo",
+	"creator": "pdiaz@diariodecuba.com",
+	"listed": true
+}

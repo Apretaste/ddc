@@ -1,21 +1,18 @@
 <?php
 use Goutte\Client;
 
-class Diariodecuba extends Service
+class Service
 {
 	/**
 	 * Function executed when the service is called
 	 *
 	 * @param Request
-	 * @return Response
+	 * @param Response
 	 */
-	public function _main(Request $request)
+	public function _main(Request $request, Response &$response)
 	{
-		$response = new Response();
-		$response->setEmailLayout('diariodecuba.tpl');
-		$response->setResponseSubject("Noticias de hoy");
-		$response->createFromTemplate("allStories.tpl", $this->allStories());
-		return $response;
+		$response->setLayout('diariodecuba.ejs');
+		$response->setTemplate("allStories.ejs", $this->allStories());
 	}
 
 	/**
@@ -29,12 +26,10 @@ class Diariodecuba extends Service
 		// no allow blank entries
 		if (empty($request->query))
 		{
-			$response = new Response();
-			$response->setEmailLayout('diariodecuba.tpl');
-			$response->setResponseSubject("Busqueda en blanco");
+
+			$response->setLayout('diariodecuba.ejs');
 			$response->createFromText("Su busqueda parece estar en blanco, debe decirnos sobre que tema desea leer");
-			return $response;
-		}
+			}
 
 		// search by the query
 		try {
@@ -46,62 +41,52 @@ class Diariodecuba extends Service
 		// error if the search returns empty
 		if(empty($articles))
 		{
-			$response = new Response();
-			$response->setEmailLayout('diariodecuba.tpl');
-			$response->setResponseSubject("Su busqueda no genero resultados");
+
+			$response->setLayout('diariodecuba.ejs');
 			$response->createFromText("Su busqueda <b>{$request->query}</b> no gener&oacute; ning&uacute;n resultado. Por favor cambie los t&eacute;rminos de b&uacute;squeda e intente nuevamente.");
-			return $response;
-		}
+			}
 
 		$responseContent = array(
 			"articles" => $articles,
 			"search" => $request->query
 		);
 
-		$response = new Response();
-		$response->setEmailLayout('diariodecuba.tpl');
-		$response->setResponseSubject("Buscar: " . $request->query);
-		$response->createFromTemplate("searchArticles.tpl", $responseContent);
-		return $response;
+		$response->setLayout('diariodecuba.ejs');
+		$response->setTemplate("searchArticles.ejs", $responseContent);
 	}
 
 	/**
 	 * Call to show the news
 	 *
 	 * @param Request
-	 * @return Response
+	 * @param Response
 	 */
-	public function _historia(Request $request)
+	public function _historia(Request $request, Response &$response)
 	{
+		// get link to the article
+		$link = $request->input->data->link;
+
 		// no allow blank entries
-		if (empty($request->query))
-		{
-			$response = new Response();
-			$response->setResponseSubject("Busqueda en blanco");
+		if (empty($link)) {
 			$response->createFromText("Su busqueda parece estar en blanco, debe decirnos que articulo quiere leer");
-			return $response;
 		}
 
 		// send the actual response
 		try {
-			$responseContent = $this->story($request->query);
+			$responseContent = $this->story($link);
 		} catch (Exception $e) {
 			return $this->respondWithError();
 		}
 
 		// get the image if exist
 		$images = array();
-		if( ! empty($responseContent['img']))
-		{
+		if( ! empty($responseContent['img'])) {
 			$images = array($responseContent['img']);
 		}
 
-		$response = new Response();
 		$response->setCache();
-		$response->setEmailLayout('diariodecuba.tpl');
-		$response->setResponseSubject("La historia que usted pidio");
-		$response->createFromTemplate("story.tpl", $responseContent, $images);
-		return $response;
+		$response->setLayout('diariodecuba.ejs');
+		$response->setTemplate("story.ejs", $responseContent, $images);
 	}
 
 	/**
@@ -114,23 +99,18 @@ class Diariodecuba extends Service
 	{
 		if (empty($request->query))
 		{
-			$response = new Response();
-			$response->setEmailLayout('diariodecuba.tpl');
-			$response->setResponseSubject("Categoria en blanco");
+
+			$response->setLayout('diariodecuba.ejs');
 			$response->createFromText("Su busqueda parece estar en blanco, debe decirnos sobre que categor&iacute;a desea leer");
-			return $response;
-		}
+			}
 
 		$responseContent = array(
 			"articles" => $this->listArticles($request->query)["articles"],
 			"category" => $request->query
 		);
 
-		$response = new Response();
-		$response->setEmailLayout('diariodecuba.tpl');
-		$response->setResponseSubject("Categoria: ".$request->query);
-		$response->createFromTemplate("catArticles.tpl", $responseContent);
-		return $response;
+		$response->setLayout('diariodecuba.ejs');
+		$response->setTemplate("catArticles.ejs", $responseContent);
 	}
 
 	/**
@@ -223,7 +203,7 @@ class Diariodecuba extends Service
 		$client->setClient($guzzle);
 
 		// create a crawler
-		$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml"); //http://www.martinoticias.com/api/epiqq
+		$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml"); 
 
 		$articles = array();
 		$crawler->filter('channel item')->each(function($item, $i) use (&$articles)
@@ -354,10 +334,7 @@ class Diariodecuba extends Service
 	{
 		error_log("WARNING: ERROR ON SERVICE DIARIO DE CUBA");
 
-		$response = new Response();
-		$response->setEmailLayout('diariodecuba.tpl');
-		$response->setResponseSubject("Error en peticion");
+		$response->setLayout('diariodecuba.ejs');
 		$response->createFromText("Lo siento pero hemos tenido un error inesperado. Enviamos una peticion para corregirlo. Por favor intente nuevamente mas tarde.");
-		return $response;
 	}
 }

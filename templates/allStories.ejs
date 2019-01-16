@@ -1,0 +1,45 @@
+
+<div class="row">
+	<div class="col s10">
+		<h1>Noticias de hoy</h1>
+	</div>
+	<div class="col s2 align-right">
+		<button class="btn waves-effect waves-light" onclick="apretaste.send({command:'DIARIODECUBA BUSCAR'})">
+			Buscar
+			<i class="material-icons right">search</i>
+		</button>
+	</div>
+</div>
+
+<div class="row">
+	<% articles.forEach(function(article) { %>
+		<h2><a href="#!" onclick="apretaste.send({command:'DIARIODECUBA HISTORIA', data:{link:'<%= article['link'] %>'}})"><%= article['title'] %></a></h2>
+
+		<p><%= article['description'] %></p>
+
+		<p><%= article['author'] %></p>
+
+		<p><%= article['pubDate'] %></p>
+
+		<% article['category'].forEach(function(category) { %>
+			<div class="chip"><%= category %></div>
+		<% }); %>
+	<% }); %>
+</div>
+
+<!-- 
+{foreach from=$articles item=article name=arts}
+	<b>{link href="DIARIODECUBA HISTORIA {$article['link']}" caption="{$article['title']}"}</b><br/>
+	{space5}
+	{$article['description']|truncate:200:" ..."}<br/>
+	<small>
+		<font color="gray">{$article['author']}, {$article['pubDate']|date_format}</font>
+		<br/>
+		Categor&iacute;as:
+		{foreach from=$article['category'] item=category name=cats}
+			{link href="DIARIODECUBA CATEGORIA {$category}" caption="{$category}"}
+			{if not $smarty.foreach.cats.last}{separator}{/if}
+		{/foreach}
+	</small>
+	{space15}
+{/foreach} -->

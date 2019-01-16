@@ -1,9 +1,0 @@
-<service>
-	<serviceName>diariodecuba</serviceName>
-	<serviceAliases>
-		<alias>diario</alias>
-	</serviceAliases>
-	<serviceDescription>Muestra los titulares de Diario de Cuba y permite leer las noticias mas recientes</serviceDescription>
-	<creatorEmail>pdiaz@diariodecuba.com</creatorEmail>
-	<serviceCategory>informativo</serviceCategory>
-</service>
