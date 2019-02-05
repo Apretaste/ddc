@@ -1,18 +1,37 @@
-<h1>{$title}</h1>
+<h1><%= title %></h1>
+<p><%= intro %></p>
 
-<p>{$intro}</p>
+<div class="row">
+    <div class="col s12 m6">
+        <div class="card blue-grey">
+            <% if (img) { %>
+            <div class="card-image">
+                <img src="<%= img %>" alt="<% imgAlt %>">
+                <span class="card-title"><% imgAlt %></span>
+            </div>
+            <% } %>
+            <div class="card-content ">
+                <span class="card-title"><%= title %></span>
+                <p><%= intro %></p>
 
-{if not empty($img)}
-	{img src="{$img}" alt="{$imgAlt}" width="100%"}
-{/if}
+                <% content.forEach(function(paragraph){ %>
+                    <p><%= paragraph %></p>
+                <% }); %>
 
-{section name=content loop=$content}
-	<p>{$content[content]}</p>
-{/section}
+                <p></p>
+            </div>
+            <div class="card-action">
+                <a href="<% url %>">Ver en la web</a>
+            </div>
+        </div>
+    </div>
+</div>
 
-{space5}
-
-<center>
-	{button href="DIARIODECUBA" caption="M&aacute;s noticias"}
-	{button href="PIZARRA Miren esto: {$url}" caption="Compartir" color="grey" wait="false"}
-</center>
+<div class="row">
+    <div class="col s6 m6">
+        <button class="btn btn-default" onclick="apretaste.send({command: 'DIARIODECUBA'});">M&aacute;s noticias</button>
+    </div>
+    <div class="col s6 m6">
+        <button class="btn btn-default" onclick="apretaste.send({command: 'PIZARRA Miren esto: <%= url %>'});">Compartir</button>
+    </div>
+</div>
