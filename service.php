@@ -27,7 +27,7 @@ class Service
 	public function _buscar(Request $request, Response &$response)
 	{
 		// no allow blank entries
-		if(empty($request->input->data->query))
+		if(empty($request->input->data->searchQuery))
 		{
 
 			$response->setLayout('diariodecuba.ejs');
@@ -41,7 +41,7 @@ class Service
 		// search by the query
 		try
 		{
-			$articles = $this->searchArticles($request->input->data->query);
+			$articles = $this->searchArticles($request->input->data->searchQuery);
 		} catch(Exception $e)
 		{
 			$this->respondWithError($response);
@@ -56,7 +56,7 @@ class Service
 			$response->setLayout('diariodecuba.ejs');
 			$response->setTemplate("text.ejs", [
 				"title" => "Su busqueda parece estar en blanco",
-				"body" => "Su busqueda <b>{$request->input->data->query}</b> no gener&oacute; ning&uacute;n resultado. Por favor cambie los t&eacute;rminos de b&uacute;squeda e intente nuevamente."
+				"body" => html_entity_decode("Su busqueda no gener&oacute; ning&uacute;n resultado. Por favor cambie los t&eacute;rminos de b&uacute;squeda e intente nuevamente.")
 			]);
 
 			return;
@@ -64,7 +64,7 @@ class Service
 
 		$responseContent = [
 			"articles" => $articles,
-			"search" => $request->input->data->query
+			"search" => $request->input->data->searchQuery
 		];
 
 		$response->setLayout('diariodecuba.ejs');
@@ -160,7 +160,11 @@ class Service
 		// Setup crawler
 		$client = new Client();
 		$url = "http://www.diariodecuba.com/search/node/" . urlencode($query);
-		$crawler = $client->request('GET', $url);
+		//$crawler = $client->request('GET', $url);
+
+		$crawler = new \Symfony\Component\DomCrawler\Crawler();
+		$crawler->addContent(file_get_contents('../services/diariodecuba/fake/allStories.xml'));
+
 
 		// Collect saearch by term
 		$articles = [];
@@ -189,7 +193,8 @@ class Service
 	{
 		// Setup crawler
 		$client = new Client();
-		$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
+		//$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
+		$crawler = $client->request('GET', "file:///home/user/workspace/Core/services/diariodecuba/fake/allStories.xml");
 
 		// Collect articles by category
 		$articles = [];
@@ -244,8 +249,9 @@ class Service
 		$client->setClient($guzzle);
 
 		// create a crawler
-		$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
-
+	//	$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
+		$crawler = new \Symfony\Component\DomCrawler\Crawler();
+		$crawler->addContent(file_get_contents('../services/diariodecuba/fake/allStories.xml'));
 		$articles = [];
 		$crawler->filter('channel item')->each(function($item, $i) use (&$articles)
 		{
@@ -278,10 +284,10 @@ class Service
 			}
 
 			$articles[] = [
-				"title" => $title,
+				"title" => html_entity_decode(strip_tags($title)),
 				"link" => $link,
 				"pubDate" => $pubDate,
-				"description" => $description,
+				"description" => html_entity_decode(strip_tags($description)),
 				"category" => $category,
 				"categoryLink" => $categoryLink,
 				"author" => $author
