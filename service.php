@@ -160,11 +160,7 @@ class Service
 		// Setup crawler
 		$client = new Client();
 		$url = "http://www.diariodecuba.com/search/node/" . urlencode($query);
-		//$crawler = $client->request('GET', $url);
-
-		$crawler = new \Symfony\Component\DomCrawler\Crawler();
-		$crawler->addContent(file_get_contents('../services/diariodecuba/fake/allStories.xml'));
-
+		$crawler = $client->request('GET', $url);
 
 		// Collect saearch by term
 		$articles = [];
@@ -193,8 +189,7 @@ class Service
 	{
 		// Setup crawler
 		$client = new Client();
-		//$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
-		$crawler = $client->request('GET', "file:///home/user/workspace/Core/services/diariodecuba/fake/allStories.xml");
+		$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
 
 		// Collect articles by category
 		$articles = [];
@@ -249,9 +244,7 @@ class Service
 		$client->setClient($guzzle);
 
 		// create a crawler
-	//	$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
-		$crawler = new \Symfony\Component\DomCrawler\Crawler();
-		$crawler->addContent(file_get_contents('../services/diariodecuba/fake/allStories.xml'));
+		$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
 		$articles = [];
 		$crawler->filter('channel item')->each(function($item, $i) use (&$articles)
 		{
