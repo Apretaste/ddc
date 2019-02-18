@@ -11,7 +11,7 @@
 <% articles.forEach(function(article){ %>
 <div class="row">
     <div class="col col-s12">
-        <h2><a href="#!" onclick="apretaste.send({command:'DIARIODECUBA HISTORIA', data:{link: article.link}})"><%= article['title'] %></a></h2>
+        <h2><a href="#!" onclick="apretaste.send({command:'DIARIODECUBA HISTORIA', data:{link: article.link}})"><%= article.title %></a></h2>
         <%= article.description.substr(0,200) %>...<br/>
         <small>
             <font color="gray">
