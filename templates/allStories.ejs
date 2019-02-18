@@ -18,7 +18,7 @@
 
             <p><%= article.description.substr(0,200) %></p>
             <p><%= article.author %></p>
-            <p><%= article.pubDate %></p>
+            <p><%= formatDate(article.pubDate) %></p>
 
             <% article['category'].forEach(function(category) { %>
                 <div class="chip"><%= category %></div>

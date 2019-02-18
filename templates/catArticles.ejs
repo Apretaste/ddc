@@ -15,7 +15,7 @@
         <%= article.description.substr(0,200) %>...<br/>
         <small>
             <font color="gray">
-                <% article.author %>, <% article.pubDate %>
+                <%= article.author %>, <%= formatDate(article.pubDate) %>
             </font>
         </small>
     </div>
