@@ -1,18 +1,31 @@
-<h1>{$title}</h1>
+<div class="row">
+    <div class="col s12 m6">
+        <% if (img) { %>
+	    <img src="<%= img %>" alt="<%= imgAlt %>">
+            <span class="card-title"><%= imgAlt %></span>
+        <% } %>
 
-<p>{$intro}</p>
+        <h1><%= title %></h1>
+	<small>
+	    <font color = "gray">
+		<%= formatDate(article.pubDate) %>
+	    </font>
+	</small>
+        <p><%= intro %></p>
+        <% content.forEach(function(paragraph){ %>
+            <p><%= paragraph %></p>
+        <% }); %>
+        <p></p>
 
-{if not empty($img)}
-	{img src="{$img}" alt="{$imgAlt}" width="100%"}
-{/if}
+        <a href="<%= url %>">Ver en la web</a>
+    </div>
+</div>
 
-{section name=content loop=$content}
-	<p>{$content[content]}</p>
-{/section}
-
-{space5}
-
-<center>
-	{button href="DIARIODECUBA" caption="M&aacute;s noticias"}
-	{button href="PIZARRA Miren esto: {$url}" caption="Compartir" color="grey" wait="false"}
-</center>
+<div class="row">
+    <div class="col s3 m3">
+        <button class="btn btn-default" onclick="apretaste.send({command: 'DIARIODECUBA'});">M&aacute;s noticias</button>
+    </div>
+    <div class="col s3 m3">
+        <button class="btn btn-default" onclick="apretaste.send({command: 'PIZARRA Miren esto: <%= url %>'});">Compartir</button>
+    </div>
+</div>

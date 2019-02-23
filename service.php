@@ -1,4 +1,5 @@
 <?php
+
 use Goutte\Client;
 
 class Service
@@ -15,7 +16,7 @@ class Service
 		// get stories
 		$stories = $this->allStories();
 
-		// send data to the view 
+		// send data to the view
 //		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("allStories.ejs", ["articles" => $stories]);
 	}
@@ -24,36 +25,55 @@ class Service
 	 * Call to show the news
 	 *
 	 * @param Request
-	 * @return Response
+	 * @param Response
+	 *
+	 * @return void
 	 */
-	public function _buscar(Request $request, Response $response)
+	public function _buscar(Request $request, Response &$response)
 	{
 		// no allow blank entries
-		if (empty($request->query)) {
-//			$response->setLayout('diariodecuba.ejs');
-			$response->createFromText("Su busqueda parece estar en blanco, debe decirnos sobre que tema desea leer");
+		if(empty($request->input->data->searchQuery))
+		{
+
+			$response->setLayout('diariodecuba.ejs');
+			$response->setTemplate('text.ejs', [
+				"title" => "Su busqueda parece estar en blanco",
+				"body" => "debe decirnos sobre que tema desea leer"
+			]);
+			return;
 		}
 
 		// search by the query
-		try {
-			$articles = $this->searchArticles($request->query);
-		} catch (Exception $e) {
-			return $this->respondWithError();
+		try
+		{
+			$articles = $this->searchArticles($request->input->data->searchQuery);
+		} catch(Exception $e)
+		{
+			$this->respondWithError($response);
+
+			return;
 		}
 
 		// error if the search returns empty
-		if(empty($articles)) {
-//			$response->setLayout('diariodecuba.ejs');
-			$response->createFromText("Su busqueda <b>{$request->query}</b> no gener&oacute; ning&uacute;n resultado. Por favor cambie los t&eacute;rminos de b&uacute;squeda e intente nuevamente.");
+		if(empty($articles))
+		{
+
+			$response->setLayout('diariodecuba.ejs');
+			$response->setTemplate("text.ejs", [
+				"title" => "Su busqueda parece estar en blanco",
+				"body" => html_entity_decode("Su busqueda no gener&oacute; ning&uacute;n resultado. Por favor cambie los t&eacute;rminos de b&uacute;squeda e intente nuevamente.")
+			]);
+
+			return;
 		}
 
-		$content = [
+		$responseContent = [
 			"articles" => $articles,
-			"search" => $request->query
+			"search" => $request->input->data->searchQuery
 		];
 
-//		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("searchArticles.ejs", $content);
+		$response->setLayout('diariodecuba.ejs');
+		$response->setTemplate("searchArticles.ejs", $responseContent);
 	}
 
 	/**
@@ -68,25 +88,37 @@ class Service
 		$link = $request->input->data->link;
 
 		// no allow blank entries
-		if (empty($link)) {
-			$response->createFromText("Su busqueda parece estar en blanco, debe decirnos que articulo quiere leer");
+		if(empty($link))
+		{
+			$response->setLayout('diariodecuba.ejs');
+			$response->setTemplate("text.ejs", [
+				"title" => "Su busqueda parece estar en blanco",
+				"body" => "Su busqueda parece estar en blanco, debe decirnos que articulo quiere leer"
+			]);
+
+			return;
 		}
 
 		// send the actual response
-		try {
+		try
+		{
 			$responseContent = $this->story($link);
-		} catch (Exception $e) {
-			return $this->respondWithError();
+		} catch(Exception $e)
+		{
+			$this->respondWithError($response);
+
+			return;
 		}
 
 		// get the image if exist
 		$images = [];
-		if( ! empty($responseContent['img'])) {
-			$images = array($responseContent['img']);
+		if( ! empty($responseContent['img']))
+		{
+			$images = [$responseContent['img']];
 		}
 
 		$response->setCache();
-//		$response->setLayout('diariodecuba.ejs');
+		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("story.ejs", $responseContent, $images);
 	}
 
@@ -94,9 +126,11 @@ class Service
 	 * Call list by categoria
 	 *
 	 * @param Request
-	 * @return Response
+	 * @param Response
+	 *
+	 * @return void
 	 */
-	public function _categoria(Request $request, Response $response)
+	public function _categoria(Request $request)
 	{
 		// get the current category
 		$category = $request->input->data->category;
@@ -124,18 +158,19 @@ class Service
 	 * Search stories
 	 *
 	 * @param String
-	 * @return Array
+	 *
+	 * @return array
 	 */
 	private function searchArticles($query)
 	{
-		// load from cache file if exists 
+		// load from cache file if exists
 		$temp = Utils::getTempDir();
 		$fileName = date("YmdH");
 die($fileName);
 
 		// Setup crawler
 		$client = new Client();
-		$url = "http://www.diariodecuba.com/search/node/".urlencode($query);
+		$url = "http://www.diariodecuba.com/search/node/" . urlencode($query);
 		$crawler = $client->request('GET', $url);
 
 
@@ -148,7 +183,7 @@ die($fileName);
 				"description" => $item->filter('p.search-snippet')->text(),
 				"title"	=> $item->filter('h1.search-title > a')->text(),
 				"link" => str_replace('http://www.diariodecuba.com/', "", $item->filter('h1.search-title > a')->attr("href"))
-			];			   
+			];
 		});
 
 		return $articles;
@@ -158,7 +193,8 @@ die($fileName);
 	 * Get the array of news by content
 	 *
 	 * @param String
-	 * @return Array
+	 *
+	 * @return array
 	 */
 	private function listArticles($query)
 	{
@@ -211,11 +247,11 @@ die($fileName);
 	/**
 	 * Get all stories from a query
 	 *
-	 * @return Array
+	 * @return array
 	 */
 	private function allStories()
 	{
-		// load from cache file if exists 
+		// load from cache file if exists
 		$cacheFile = Utils::getTempDir() . date("YmdH") . 'diariodecuba.tmp';
 		if(file_exists($cacheFile)) $articles = unserialize(file_get_contents($cacheFile));
 		else {
@@ -274,7 +310,8 @@ die($fileName);
 	 * Get an specific news to display
 	 *
 	 * @param String
-	 * @return Array
+	 *
+	 * @return array
 	 */
 	private function story($query)
 	{
@@ -292,18 +329,20 @@ die($fileName);
 		// get the intro
 
 		$titleObj = $crawler->filter('div.content:nth-child(1) p:nth-child(1)');
-		$intro = $titleObj->count()>0 ? $titleObj->text() : "";
+		$intro = $titleObj->count() > 0 ? $titleObj->text() : "";
 
 		// get the images
 		$imageObj = $crawler->filter('figure.field-field-image-content img');
-		$imgUrl = ""; $imgAlt = ""; $img = "";
-		if ($imageObj->count() != 0)
+		$imgUrl = "";
+		$imgAlt = "";
+		$img = "";
+		if($imageObj->count() != 0)
 		{
 			$imgUrl = trim($imageObj->attr("src"));
 			$imgAlt = trim($imageObj->attr("alt"));
 
 			// get the image
-			if ( ! empty($imgUrl))
+			if( ! empty($imgUrl))
 			{
 				$imgName = $this->utils->generateRandomHash() . "." . pathinfo($imgUrl, PATHINFO_EXTENSION);
 				$img = \Phalcon\DI\FactoryDefault::getDefault()->get('path')['root'] . "/temp/$imgName";
@@ -314,26 +353,27 @@ die($fileName);
 		// get the array of paragraphs of the body
 		$paragraphs = $crawler->filter('div.node div.content p');
 		$content = [];
-		foreach ($paragraphs as $p)
+		foreach($paragraphs as $p)
 		{
 			$content[] = trim($p->textContent);
 		}
 
 		// create a json object to send to the template
-		return array(
+		return [
 			"title" => $title,
 			"intro" => $intro,
 			"img" => $img,
 			"imgAlt" => $imgAlt,
 			"content" => $content,
 			"url" => "http://www.diariodecuba.com/$query"
-		);
+		];
 	}
 
 	/**
 	 * Get the link to the news starting from the /content part
 	 *
 	 * @param String
+	 *
 	 * @return String
 	 * http://www.martinoticias.com/content/blah
 	 */
@@ -343,20 +383,28 @@ die($fileName);
 		unset($url[0]);
 		unset($url[1]);
 		unset($url[2]);
+
 		return implode("/", $url);
 	}
 
 	/**
 	 * Return a generic error email, usually for try...catch blocks
 	 *
-	 * @auhor salvipascual
-	 * @return Respose
+	 * @author salvipascual
+	 * @author kumahacker
+	 *
+	 * @param Response
+	 *
+	 * @return void
 	 */
-	private function respondWithError()
+	private function respondWithError(Response &$response)
 	{
 		error_log("WARNING: ERROR ON SERVICE DIARIO DE CUBA");
 
-//		$response->setLayout('diariodecuba.ejs');
-		$response->createFromText("Lo siento pero hemos tenido un error inesperado. Enviamos una peticion para corregirlo. Por favor intente nuevamente mas tarde.");
+		$response->setLayout('diariodecuba.ejs');
+		$response->setTemplate("text.ejs", [
+			"title" => "Error inesperado",
+			"body" => "Lo siento pero hemos tenido un error inesperado. Enviamos una peticion para corregirlo. Por favor intente nuevamente mas tarde.",
+		]);
 	}
 }
