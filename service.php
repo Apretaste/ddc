@@ -6,6 +6,7 @@ class Service
 	/**
 	 * Function executed when the service is called
 	 *
+	 * @author salvipascual
 	 * @param Request
 	 * @param Response
 	 */
