@@ -11,13 +11,13 @@ class Service
 	 * @param Request
 	 * @param Response
 	 */
-	public function _main(Request $request, Response $response)
+	public function _main(Request $request, Response &$response)
 	{
 		// get stories
 		$stories = $this->allStories();
 
 		// send data to the view
-//		$response->setLayout('diariodecuba.ejs');
+		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("allStories.ejs", ["articles" => $stories]);
 	}
 
