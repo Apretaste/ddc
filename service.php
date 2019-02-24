@@ -214,52 +214,69 @@ class Service
 	 */
 	private function listArticles($query)
 	{
-		// Setup crawler
-		$client = new Client();
-		$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
+		// load from cache file if exists
+		$temp = Utils::getTempDir();
+		$fileName = date("YmdH") . md5($query) . '.tmp';
+		$fullPath = "$temp/$fileName";
 
-		// Collect articles by category
-		$articles = [];
-		$crawler->filter('channel item')->each(function($item, $i) use (&$articles, $query)
+		$articles = false;
+
+		if(file_exists($fullPath))
 		{
-			// if category matches, add to list of articles
-			$item->filter('category')->each(function($cat, $i) use (&$articles, $query, $item)
+			$articles = @unserialize(file_get_contents($fullPath));
+		}
+
+		if( ! is_array($articles))
+		{
+			// Setup crawler
+			$client = new Client();
+			$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
+
+			// Collect articles by category
+			$articles = [];
+			$crawler->filter('channel item')->each(function($item, $i) use (&$articles, $query)
 			{
-				if(strtoupper($cat->text()) == strtoupper($query))
+				// if category matches, add to list of articles
+				$item->filter('category')->each(function($cat, $i) use (&$articles, $query, $item)
 				{
-					// $title = $item->filter('title')->text();
-					// $link = $this->urlSplit($item->filter('link')->text());
-					$pubDate = $item->filter('pubDate')->text();
-					// $description = $item->filter('description')->text();
-					// $cadenaAborrar = "/<!-- google_ad_section_start --><!-- google_ad_section_end --><p>/";
-					// $description = preg_replace($cadenaAborrar, '', $description);
-					// $description = preg_replace("/<\/?a[^>]*>/", '', $description);//quitamos las <a></a>
-					// $description = preg_replace("/<\/?p[^>]*>/", '', $description);//quitamos las <p></p>
-
-					$title = $item->filter('title')->text();
-					$link = $this->urlSplit($item->filter('link')->text());
-					$description = $item->filter('description')->text();
-					$description = trim(strip_tags($description));
-					$description = html_entity_decode($description);
-					$description = substr($description, 0, 200) . " ...";
-
-					$author = "desconocido";
-					if($item->filter('dc|creator')->count() > 0)
+					if(strtoupper($cat->text()) == strtoupper($query))
 					{
-						$authorString = trim($item->filter('dc|creator')->text());
-						$author = "{$authorString}";
-					}
+						// $title = $item->filter('title')->text();
+						// $link = $this->urlSplit($item->filter('link')->text());
+						$pubDate = $item->filter('pubDate')->text();
+						// $description = $item->filter('description')->text();
+						// $cadenaAborrar = "/<!-- google_ad_section_start --><!-- google_ad_section_end --><p>/";
+						// $description = preg_replace($cadenaAborrar, '', $description);
+						// $description = preg_replace("/<\/?a[^>]*>/", '', $description);//quitamos las <a></a>
+						// $description = preg_replace("/<\/?p[^>]*>/", '', $description);//quitamos las <p></p>
 
-					$articles[] = [
-						"title" => $title,
-						"link" => $link,
-						"pubDate" => $pubDate,
-						"description" => $description,
-						"author" => $author
-					];
-				}
+						$title = $item->filter('title')->text();
+						$link = $this->urlSplit($item->filter('link')->text());
+						$description = $item->filter('description')->text();
+						$description = trim(strip_tags($description));
+						$description = html_entity_decode($description);
+						$description = substr($description, 0, 200) . " ...";
+
+						$author = "desconocido";
+						if($item->filter('dc|creator')->count() > 0)
+						{
+							$authorString = trim($item->filter('dc|creator')->text());
+							$author = "{$authorString}";
+						}
+
+						$articles[] = [
+							"title" => $title,
+							"link" => $link,
+							"pubDate" => $pubDate,
+							"description" => $description,
+							"author" => $author
+						];
+					}
+				});
 			});
-		});
+
+			file_put_contents($fullPath, serialize($articles));
+		}
 
 		return $articles;
 	}
