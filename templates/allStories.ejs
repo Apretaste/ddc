@@ -1,37 +1,37 @@
-<div class="row">
-	<div class="col s12">
-		<h1>Noticias de hoy</h1>
-		<% articles.forEach(function(article) { %>
-			<h2><a href="#!" onclick="apretaste.send({command:'DIARIODECUBA HISTORIA', data:{link:'<%= article['link'] %>'}})">
-				<%= article['title'] %></a>
-			</h2>
-			<p><%= article['description'] %></p>
-			<p>Por <%= article['author'] %> el <%= formatDate(article['pubDate']) %></p>
-			<% article['category'].forEach(function(category) { %>
-				<a href="#!" onclick="apretaste.send({command:'DIARIODECUBA CATEGORIA', data:{category:'<%= category %>'}})">
-					<div class="chip"><%= category %></div>
-				</a>
-			<% }) %>
-		<% }) %>
-	</div>
+<div class = "row">
+    <div class = "col s12">
+        <h1>Noticias de hoy</h1>
+        <% articles.forEach(function(article) { %>
+        <h2>
+            <a href = "#!" onclick = "apretaste.send({command:'DIARIODECUBA HISTORIA', data:{link:'<%= article['link'] %>'}})">
+                <%= article['title'] %></a>
+        </h2>
+        <p><%= article['description'] %></p>
+        <p>Por <%= article['author'] %> el <%= formatDate(article['pubDate']) %></p>
+        <% article['category'].forEach(function(category) { %>
+        <a href = "#!" onclick = "apretaste.send({command:'DIARIODECUBA CATEGORIA', data:{category:'<%= category %>'}})">
+            <div class = "chip"><%= category %></div>
+        </a>
+        <% }) %>
+        <% }) %>
+    </div>
 </div>
 
-<div class="fixed-action-btn">
-	<a href="#searchModal" class="btn-floating btn-large waves-effect waves-light green modal-trigger">
-		<i class="large material-icons">search</i>
-	</a>
+<div class = "fixed-action-btn">
+    <a href = "#searchModal" class = "btn-floating btn-large waves-effect waves-light green modal-trigger">
+        <i class = "large material-icons">search</i>
+    </a>
 </div>
 
-<div id="searchModal" class="modal bottom-sheet">
-	<div class="modal-content">
-		<div class="input-field">
-			<textarea id="note" class="materialize-textarea"></textarea>
-			<label for="note">Escriba su nota</label>
-			<span class="helper-text">Restante: 300</span>
-		</div>
-	</div>	
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-		<a onclick="sendNote()" class="modal-close waves-effect waves-green btn-flat">Publicar</a>
-	</div>
+<div id = "searchModal" class = "modal bottom-sheet">
+    <div class = "modal-content">
+        <div class = "input-field">
+            <textarea id = "searchQuery" class = "materialize-textarea"></textarea>
+            <label for = "note">Buscar</label>
+        </div>
+    </div>
+    <div class = "modal-footer">
+        <a href = "#!" class = "modal-close waves-effect waves-light btn-flat">Cerrar</a>
+        <a onclick = "sendSearch()" class = "modal-close waves-effect waves-green btn-flat">Buscar</a>
+    </div>
 </div>

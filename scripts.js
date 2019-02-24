@@ -15,3 +15,16 @@ function formatDate(dateStr) {
 	var day = date.getDate().toString().padStart(2, '0');
 	return day + '/' + month + '/' + year;
 }
+
+
+function sendSearch() {
+    let query = $('#searchQuery').val().trim();
+    if(query.length >= 2){
+        apretaste.send({
+            'command':'DIARIODECUBA BUSCAR',
+            'data':{searchQuery: query}
+        });
+    }
+    else
+        showToast('Minimo 2 caracteres');
+}
