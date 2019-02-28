@@ -44,7 +44,7 @@ class Service
 		// error if the search returns empty
 		if(empty($articles)) {
 //			$response->setLayout('diariodecuba.ejs');
-			$response->createFromText("Su busqueda <b>{$request->query}</b> no gener&oacute; ning&uacute;n resultado. Por favor cambie los t&eacute;rminos de b&uacute;squeda e intente nuevamente.");
+			$response->createFromText("Su busqueda <b>{$request->query}</b> no generó ningún resultado. Por favor cambie los términos de búsqueda e intente nuevamente.");
 		}
 
 		$content = [
