@@ -10,6 +10,10 @@ function formatDate(dateStr) {
 	return day + '/' + month + '/' + year;
 }
 
+function showToast(text) {
+    M.toast({html: text});
+}
+
 function sendSearch() {
     let query = $('#searchQuery').val().trim();
     if(query.length >= 2) {
@@ -18,5 +22,5 @@ function sendSearch() {
             'data':{searchQuery: query}
         });
     }
-    else alert("Minimo 2 caracteres"); // showToast('Minimo 2 caracteres');
+    else showToast('Minimo 2 caracteres');
 }
