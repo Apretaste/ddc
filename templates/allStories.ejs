@@ -3,11 +3,11 @@
         <h1>Noticias de hoy</h1>
         <% articles.forEach(function(article) { %>
         <h2>
-            <a href = "#!" onclick = "apretaste.send({command:'DIARIODECUBA HISTORIA', data:{link:'<%= article['link'] %>'}})">
-                <%= article['title'] %></a>
+            <a href = "#!" onclick = "apretaste.send({command:'DIARIODECUBA HISTORIA', data:{link: article.link }})">
+                <%= article.title %></a>
         </h2>
-        <p><%= article['description'] %></p>
-        <p>Por <%= article['author'] %> el <%= formatDate(article['pubDate']) %></p>
+        <p><%= article.description %></p>
+        <p>Por <%= article.author %> el <%= formatDate(article.pubDate) %></p>
         <% article['category'].forEach(function(category) { %>
         <a href = "#!" onclick = "apretaste.send({command:'DIARIODECUBA CATEGORIA', data:{category:'<%= category %>'}})">
             <div class = "chip"><%= category %></div>
