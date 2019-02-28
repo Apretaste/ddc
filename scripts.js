@@ -1,13 +1,7 @@
-//
-// on load
-//
 $(document).ready(function() {
 	$('.modal').modal();
 });
 
-//
-// formats a date
-//
 function formatDate(dateStr) {
 	var date = new Date(dateStr);
 	var year = date.getFullYear();
@@ -16,15 +10,13 @@ function formatDate(dateStr) {
 	return day + '/' + month + '/' + year;
 }
 
-
 function sendSearch() {
     let query = $('#searchQuery').val().trim();
-    if(query.length >= 2){
+    if(query.length >= 2) {
         apretaste.send({
             'command':'DIARIODECUBA BUSCAR',
             'data':{searchQuery: query}
         });
     }
-    else
-        showToast('Minimo 2 caracteres');
+    else alert("Minimo 2 caracteres"); // showToast('Minimo 2 caracteres');
 }

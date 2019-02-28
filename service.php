@@ -57,6 +57,11 @@ class Service
 		}
 
 		// error if the search returns empty
+<<<<<<< HEAD
+		if(empty($articles)) {
+//			$response->setLayout('diariodecuba.ejs');
+			$response->createFromText("Su busqueda <b>{$request->query}</b> no generó ningún resultado. Por favor cambie los términos de búsqueda e intente nuevamente.");
+=======
 		if(empty($articles))
 		{
 
@@ -67,6 +72,7 @@ class Service
 			]);
 
 			return;
+>>>>>>> b79119e3c895bf77b0a3d855914870b12120115f
 		}
 
 		$responseContent = [
