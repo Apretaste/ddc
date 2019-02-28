@@ -10,6 +10,13 @@ function formatDate(dateStr) {
 	return day + '/' + month + '/' + year;
 }
 
-function search() {
-	apretaste.send({command:'DIARIODECUBA BUSCAR'})
+function sendSearch() {
+    let query = $('#searchQuery').val().trim();
+    if(query.length >= 2) {
+        apretaste.send({
+            'command':'DIARIODECUBA BUSCAR',
+            'data':{searchQuery: query}
+        });
+    }
+    else alert("Minimo 2 caracteres"); // showToast('Minimo 2 caracteres');
 }

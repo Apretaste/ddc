@@ -1,4 +1,5 @@
 <?php
+
 use Goutte\Client;
 
 class Service
@@ -7,16 +8,17 @@ class Service
 	 * Function executed when the service is called
 	 *
 	 * @author salvipascual
+	 *
 	 * @param Request
 	 * @param Response
 	 */
-	public function _main(Request $request, Response $response)
+	public function _main(Request $request, Response &$response)
 	{
 		// get stories
 		$stories = $this->allStories();
 
-		// send data to the view 
-//		$response->setLayout('diariodecuba.ejs');
+		// send data to the view
+		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("allStories.ejs", ["articles" => $stories]);
 	}
 
@@ -24,36 +26,62 @@ class Service
 	 * Call to show the news
 	 *
 	 * @param Request
-	 * @return Response
+	 * @param Response
+	 *
+	 * @return void
 	 */
-	public function _buscar(Request $request, Response $response)
+	public function _buscar(Request $request, Response &$response)
 	{
 		// no allow blank entries
-		if (empty($request->query)) {
-//			$response->setLayout('diariodecuba.ejs');
-			$response->createFromText("Su busqueda parece estar en blanco, debe decirnos sobre que tema desea leer");
+		if(empty($request->input->data->searchQuery))
+		{
+
+			$response->setLayout('diariodecuba.ejs');
+			$response->setTemplate('text.ejs', [
+				"title" => "Su busqueda parece estar en blanco",
+				"body" => "debe decirnos sobre que tema desea leer"
+			]);
+
+			return;
 		}
 
 		// search by the query
-		try {
-			$articles = $this->searchArticles($request->query);
-		} catch (Exception $e) {
-			return $this->respondWithError();
+		try
+		{
+			$articles = $this->searchArticles($request->input->data->searchQuery);
+		} catch(Exception $e)
+		{
+			$this->respondWithError($response);
+
+			return;
 		}
 
 		// error if the search returns empty
+<<<<<<< HEAD
 		if(empty($articles)) {
 //			$response->setLayout('diariodecuba.ejs');
 			$response->createFromText("Su busqueda <b>{$request->query}</b> no generó ningún resultado. Por favor cambie los términos de búsqueda e intente nuevamente.");
+=======
+		if(empty($articles))
+		{
+
+			$response->setLayout('diariodecuba.ejs');
+			$response->setTemplate("text.ejs", [
+				"title" => "Su busqueda parece estar en blanco",
+				"body" => html_entity_decode("Su busqueda no gener&oacute; ning&uacute;n resultado. Por favor cambie los t&eacute;rminos de b&uacute;squeda e intente nuevamente.")
+			]);
+
+			return;
+>>>>>>> b79119e3c895bf77b0a3d855914870b12120115f
 		}
 
-		$content = [
+		$responseContent = [
 			"articles" => $articles,
-			"search" => $request->query
+			"search" => $request->input->data->searchQuery
 		];
 
-//		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("searchArticles.ejs", $content);
+		$response->setLayout('diariodecuba.ejs');
+		$response->setTemplate("searchArticles.ejs", $responseContent);
 	}
 
 	/**
@@ -68,25 +96,37 @@ class Service
 		$link = $request->input->data->link;
 
 		// no allow blank entries
-		if (empty($link)) {
-			$response->createFromText("Su busqueda parece estar en blanco, debe decirnos que articulo quiere leer");
+		if(empty($link))
+		{
+			$response->setLayout('diariodecuba.ejs');
+			$response->setTemplate("text.ejs", [
+				"title" => "Su busqueda parece estar en blanco",
+				"body" => "Su busqueda parece estar en blanco, debe decirnos que articulo quiere leer"
+			]);
+
+			return;
 		}
 
 		// send the actual response
-		try {
+		try
+		{
 			$responseContent = $this->story($link);
-		} catch (Exception $e) {
-			return $this->respondWithError();
+		} catch(Exception $e)
+		{
+			$this->respondWithError($response);
+
+			return;
 		}
 
 		// get the image if exist
 		$images = [];
-		if( ! empty($responseContent['img'])) {
-			$images = array($responseContent['img']);
+		if( ! empty($responseContent['img']))
+		{
+			$images = [$responseContent['img']];
 		}
 
 		$response->setCache();
-//		$response->setLayout('diariodecuba.ejs');
+		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("story.ejs", $responseContent, $images);
 	}
 
@@ -94,21 +134,26 @@ class Service
 	 * Call list by categoria
 	 *
 	 * @param Request
-	 * @return Response
+	 * @param Response
+	 *
+	 * @return void
 	 */
-	public function _categoria(Request $request, Response $response)
+	public function _categoria(Request $request, Response &$response)
 	{
 		// get the current category
 		$category = $request->input->data->category;
 
 		// do not allow empty categories
-		if (empty($category)) {
-			return $response->setTemplate('message.ejs', [
-				"header"=>"Búsqueda en blanco",
-				"icon"=>"sentiment_very_dissatisfied",
+		if(empty($category))
+		{
+			$response->setTemplate('message.ejs', [
+				"header" => "Búsqueda en blanco",
+				"icon" => "sentiment_very_dissatisfied",
 				"text" => "Su búsqueda parece estar en blanco, debe decirnos sobre que categoría desea leer.",
-				"button" => ["href"=>"DIARIODECUBA", "caption"=>"Noticias"]
+				"button" => ["href" => "DIARIODECUBA", "caption" => "Noticias"]
 			]);
+
+			return;
 		}
 
 		$content = [
@@ -116,7 +161,7 @@ class Service
 			"category" => $category
 		];
 
-//		$response->setLayout('diariodecuba.ejs');
+		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("catArticles.ejs", $content);
 	}
 
@@ -124,32 +169,44 @@ class Service
 	 * Search stories
 	 *
 	 * @param String
-	 * @return Array
+	 *
+	 * @return array
 	 */
 	private function searchArticles($query)
 	{
-		// load from cache file if exists 
+		// load from cache file if exists
 		$temp = Utils::getTempDir();
-		$fileName = date("YmdH");
-die($fileName);
+		$fileName = date("YmdH") . md5($query) . '.tmp';
+		$fullPath = "$temp/$fileName";
 
-		// Setup crawler
-		$client = new Client();
-		$url = "http://www.diariodecuba.com/search/node/".urlencode($query);
-		$crawler = $client->request('GET', $url);
+		$articles = false;
 
+		if(file_exists($fullPath))
+		{
+			$articles = @unserialize(file_get_contents($fullPath));
+		}
 
-//		file_put_contents("$temp/", data);
+		if( ! is_array($articles))
+		{
+			// Setup crawler
+			$client = new Client();
+			$url = "http://www.diariodecuba.com/search/node/" . urlencode($query);
+			$crawler = $client->request('GET', $url);
 
-		// Collect saearch by term
-		$articles = [];
-		$crawler->filter('div.search-result')->each(function($item) use (&$articles) {
-			$articles[] = [
-				"description" => $item->filter('p.search-snippet')->text(),
-				"title"	=> $item->filter('h1.search-title > a')->text(),
-				"link" => str_replace('http://www.diariodecuba.com/', "", $item->filter('h1.search-title > a')->attr("href"))
-			];			   
-		});
+			// Collect saearch by term
+			$articles = [];
+			$crawler->filter('div.search-result')->each(function($item) use (&$articles)
+			{
+				$articles[] = [
+					"description" => $item->filter('p.search-snippet')->text(),
+					"title" => $item->filter('h1.search-title > a')->text(),
+					"link" => str_replace('http://www.diariodecuba.com/', "", $item->filter('h1.search-title > a')->attr("href")),
+					"pubdate" =>  $item->filter('pubDate')->text()
+				];
+			});
+
+			file_put_contents($fullPath, serialize($articles));
+		}
 
 		return $articles;
 	}
@@ -158,52 +215,74 @@ die($fileName);
 	 * Get the array of news by content
 	 *
 	 * @param String
-	 * @return Array
+	 *
+	 * @return array
 	 */
 	private function listArticles($query)
 	{
-		// Setup crawler
-		$client = new Client();
-		$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
+		// load from cache file if exists
+		$temp = Utils::getTempDir();
+		$fileName = date("YmdH") . md5($query) . '.tmp';
+		$fullPath = "$temp/$fileName";
 
-		// Collect articles by category
-		$articles = [];
-		$crawler->filter('channel item')->each(function($item, $i) use (&$articles, $query) {
-			// if category matches, add to list of articles
-			$item->filter('category')->each(function($cat, $i) use (&$articles, $query, $item) {
-				if (strtoupper($cat->text()) == strtoupper($query)) {
-					// $title = $item->filter('title')->text();
-					// $link = $this->urlSplit($item->filter('link')->text());
-					// $pubDate = $item->filter('pubDate')->text();
-					// $description = $item->filter('description')->text();
-					// $cadenaAborrar = "/<!-- google_ad_section_start --><!-- google_ad_section_end --><p>/";
-					// $description = preg_replace($cadenaAborrar, '', $description);
-					// $description = preg_replace("/<\/?a[^>]*>/", '', $description);//quitamos las <a></a>
-					// $description = preg_replace("/<\/?p[^>]*>/", '', $description);//quitamos las <p></p>
+		$articles = false;
 
-					$title = $item->filter('title')->text();
-					$link = $this->urlSplit($item->filter('link')->text());
-					$description = $item->filter('description')->text();
-					$description = trim(strip_tags($description));
-					$description = html_entity_decode($description);
-					$description = substr($description, 0, 200)." ...";
+		if(file_exists($fullPath))
+		{
+			$articles = @unserialize(file_get_contents($fullPath));
+		}
 
-					$author = "desconocido";
-					if ($item->filter('dc|creator')->count() > 0) {
-						$authorString = trim($item->filter('dc|creator')->text());
-						$author = "{$authorString}";
+		if( ! is_array($articles))
+		{
+			// Setup crawler
+			$client = new Client();
+			$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
+
+			// Collect articles by category
+			$articles = [];
+			$crawler->filter('channel item')->each(function($item, $i) use (&$articles, $query)
+			{
+				// if category matches, add to list of articles
+				$item->filter('category')->each(function($cat, $i) use (&$articles, $query, $item)
+				{
+					if(strtoupper($cat->text()) == strtoupper($query))
+					{
+						// $title = $item->filter('title')->text();
+						// $link = $this->urlSplit($item->filter('link')->text());
+						$pubDate = $item->filter('pubDate')->text();
+						// $description = $item->filter('description')->text();
+						// $cadenaAborrar = "/<!-- google_ad_section_start --><!-- google_ad_section_end --><p>/";
+						// $description = preg_replace($cadenaAborrar, '', $description);
+						// $description = preg_replace("/<\/?a[^>]*>/", '', $description);//quitamos las <a></a>
+						// $description = preg_replace("/<\/?p[^>]*>/", '', $description);//quitamos las <p></p>
+
+						$title = $item->filter('title')->text();
+						$link = $this->urlSplit($item->filter('link')->text());
+						$description = $item->filter('description')->text();
+						$description = trim(strip_tags($description));
+						$description = html_entity_decode($description);
+						$description = substr($description, 0, 200) . " ...";
+
+						$author = "desconocido";
+						if($item->filter('dc|creator')->count() > 0)
+						{
+							$authorString = trim($item->filter('dc|creator')->text());
+							$author = "{$authorString}";
+						}
+
+						$articles[] = [
+							"title" => $title,
+							"link" => $link,
+							"pubDate" => $pubDate,
+							"description" => $description,
+							"author" => $author
+						];
 					}
-
-					$articles[] = [
-						"title" => $title,
-						"link" => $link,
-						"pubDate" => $pubDate,
-						"description" => $description,
-						"author" => $author
-					];
-				}
+				});
 			});
-		});
+
+			file_put_contents($fullPath, serialize($articles));
+		}
 
 		return $articles;
 	}
@@ -211,14 +290,19 @@ die($fileName);
 	/**
 	 * Get all stories from a query
 	 *
-	 * @return Array
+	 * @return array
 	 */
 	private function allStories()
 	{
-		// load from cache file if exists 
+
+		// load from cache file if exists
 		$cacheFile = Utils::getTempDir() . date("YmdH") . 'diariodecuba.tmp';
-		if(file_exists($cacheFile)) $articles = unserialize(file_get_contents($cacheFile));
-		else {
+		if(file_exists($cacheFile))
+		{
+			$articles = unserialize(file_get_contents($cacheFile));
+		}
+		else
+		{
 			// create a new client
 			$client = new Client();
 			$guzzle = $client->getClient();
@@ -229,25 +313,31 @@ die($fileName);
 
 			// get all articles
 			$articles = [];
-			$crawler->filter('channel item')->each(function($item, $i) use (&$articles) {
+			$crawler->filter('channel item')->each(function($item, $i) use (&$articles)
+			{
 				// get all parameters
 				$title = $item->filter('title')->text();
 				$link = $this->urlSplit($item->filter('link')->text());
 				$description = $item->filter('description')->text();
 				$description = trim(strip_tags($description));
 				$description = html_entity_decode($description);
-				$description = substr($description, 0, 200)." ...";
+				$description = substr($description, 0, 200) . " ...";
 				$pubDate = $item->filter('pubDate')->text();
-				$category = $item->filter('category')->each(function($category, $j) {return $category->text();});
+				$category = $item->filter('category')->each(function($category, $j){ return $category->text(); });
 
-				if ($item->filter('dc|creator')->count() == 0) $author = "desconocido";
-				else {
+				if($item->filter('dc|creator')->count() == 0)
+				{
+					$author = "desconocido";
+				}
+				else
+				{
 					$authorString = trim($item->filter('dc|creator')->text());
 					$author = "{$authorString}";
 				}
 
 				$categoryLink = [];
-				foreach ($category as $currCategory) {
+				foreach($category as $currCategory)
+				{
 					$categoryLink[] = $currCategory;
 				}
 
@@ -274,7 +364,8 @@ die($fileName);
 	 * Get an specific news to display
 	 *
 	 * @param String
-	 * @return Array
+	 *
+	 * @return array
 	 */
 	private function story($query)
 	{
@@ -292,18 +383,20 @@ die($fileName);
 		// get the intro
 
 		$titleObj = $crawler->filter('div.content:nth-child(1) p:nth-child(1)');
-		$intro = $titleObj->count()>0 ? $titleObj->text() : "";
+		$intro = $titleObj->count() > 0 ? $titleObj->text() : "";
 
 		// get the images
 		$imageObj = $crawler->filter('figure.field-field-image-content img');
-		$imgUrl = ""; $imgAlt = ""; $img = "";
-		if ($imageObj->count() != 0)
+		$imgUrl = "";
+		$imgAlt = "";
+		$img = "";
+		if($imageObj->count() != 0)
 		{
 			$imgUrl = trim($imageObj->attr("src"));
 			$imgAlt = trim($imageObj->attr("alt"));
 
 			// get the image
-			if ( ! empty($imgUrl))
+			if( ! empty($imgUrl))
 			{
 				$imgName = $this->utils->generateRandomHash() . "." . pathinfo($imgUrl, PATHINFO_EXTENSION);
 				$img = \Phalcon\DI\FactoryDefault::getDefault()->get('path')['root'] . "/temp/$imgName";
@@ -314,26 +407,27 @@ die($fileName);
 		// get the array of paragraphs of the body
 		$paragraphs = $crawler->filter('div.node div.content p');
 		$content = [];
-		foreach ($paragraphs as $p)
+		foreach($paragraphs as $p)
 		{
 			$content[] = trim($p->textContent);
 		}
 
 		// create a json object to send to the template
-		return array(
+		return [
 			"title" => $title,
 			"intro" => $intro,
 			"img" => $img,
 			"imgAlt" => $imgAlt,
 			"content" => $content,
 			"url" => "http://www.diariodecuba.com/$query"
-		);
+		];
 	}
 
 	/**
 	 * Get the link to the news starting from the /content part
 	 *
 	 * @param String
+	 *
 	 * @return String
 	 * http://www.martinoticias.com/content/blah
 	 */
@@ -343,20 +437,28 @@ die($fileName);
 		unset($url[0]);
 		unset($url[1]);
 		unset($url[2]);
+
 		return implode("/", $url);
 	}
 
 	/**
 	 * Return a generic error email, usually for try...catch blocks
 	 *
-	 * @auhor salvipascual
-	 * @return Respose
+	 * @author salvipascual
+	 * @author kumahacker
+	 *
+	 * @param Response
+	 *
+	 * @return void
 	 */
-	private function respondWithError()
+	private function respondWithError(Response &$response)
 	{
 		error_log("WARNING: ERROR ON SERVICE DIARIO DE CUBA");
 
-//		$response->setLayout('diariodecuba.ejs');
-		$response->createFromText("Lo siento pero hemos tenido un error inesperado. Enviamos una peticion para corregirlo. Por favor intente nuevamente mas tarde.");
+		$response->setLayout('diariodecuba.ejs');
+		$response->setTemplate("text.ejs", [
+			"title" => "Error inesperado",
+			"body" => "Lo siento pero hemos tenido un error inesperado. Enviamos una peticion para corregirlo. Por favor intente nuevamente mas tarde.",
+		]);
 	}
 }
