@@ -18,7 +18,7 @@ class Service
     $cacheFile = Utils::getTempDir() . date("YmdH") . 'diariodecuba.tmp';
 
     $articles = false;
-
+/*
     $articles = [
       [
         "title" => "tremendo titulo",
@@ -30,7 +30,7 @@ class Service
         "author" => "pepe"
       ]
     ];
-
+*/
     if(file_exists($cacheFile))
     {
       $articles = @unserialize(@file_get_contents($cacheFile));
