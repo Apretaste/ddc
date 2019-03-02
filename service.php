@@ -125,7 +125,7 @@ class Service
 			$articles = $this->searchArticles($request->input->data->searchQuery);
 		} catch(Exception $e)
 		{
-			$this->respondWithError($response);
+			$this->respondWithError($response, $e);
 
 			return;
 		}
@@ -181,7 +181,7 @@ class Service
 			$responseContent = $this->story($link);
 		} catch(Exception $e)
 		{
-			$this->respondWithError($response);
+			$this->respondWithError($response, $e);
 
 			return;
 		}
@@ -445,17 +445,20 @@ class Service
 	 * @author kumahacker
 	 *
 	 * @param Response
-	 *
+	 * @param Exception
+   *
 	 * @return void
 	 */
-	private function respondWithError(Response &$response)
+	private function respondWithError(Response &$response, Exception $e)
 	{
 		error_log("WARNING: ERROR ON SERVICE DIARIO DE CUBA");
 
 		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("text.ejs", [
 			"title" => "Error inesperado",
-			"body" => "Lo siento pero hemos tenido un error inesperado. Enviamos una peticion para corregirlo. Por favor intente nuevamente mas tarde.",
+			"body" => "Lo siento pero hemos tenido un error inesperado. Enviamos una peticion para corregirlo. 
+                 Por favor intente nuevamente mas tarde.<br/> 
+                 Informaci&oacute;n t&eacute;cnica: <i>{$e->getMessage()}</i>"
 		]);
 	}
 }
