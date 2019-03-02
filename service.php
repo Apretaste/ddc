@@ -14,12 +14,86 @@ class Service
 	 */
 	public function _main(Request $request, Response &$response)
 	{
-		// get stories
-		$stories = $this->allStories();
+    // load from cache file if exists
+    $cacheFile = Utils::getTempDir() . date("YmdH") . 'diariodecuba.tmp';
+
+    $articles = false;
+
+    $articles = [
+      [
+        "title" => "tremendo titulo",
+        "link" => "http://diariodecuba.com/blablabla",
+        "pubDate" => date("Y-m-d"),
+        "description" => str_repeat("tremendo articulo ",20),
+        "category" => ["Cuba"],
+        "categoryLink" => "/cuba",
+        "author" => "pepe"
+      ]
+    ];
+
+    if(file_exists($cacheFile))
+    {
+      $articles = @unserialize(@file_get_contents($cacheFile));
+    }
+
+    if (!is_array($articles))
+    {
+      // create a new client
+      $client = new Client();
+      $guzzle = $client->getClient();
+      $client->setClient($guzzle);
+
+      // create a crawler
+      $crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
+
+      // get all articles
+      $articles = [];
+      $crawler->filter('channel item')->each(function($item, $i) use (&$articles)
+      {
+        // get all parameters
+        $title = $item->filter('title')->text();
+        $link = $this->urlSplit($item->filter('link')->text());
+        $description = $item->filter('description')->text();
+        $description = trim(strip_tags($description));
+        $description = html_entity_decode($description);
+        $description = substr($description, 0, 200) . " ...";
+        $pubDate = $item->filter('pubDate')->text();
+        $category = $item->filter('category')->each(function($category, $j){ return $category->text(); });
+
+        if($item->filter('dc|creator')->count() == 0)
+        {
+          $author = "desconocido";
+        }
+        else
+        {
+          $authorString = trim($item->filter('dc|creator')->text());
+          $author = "{$authorString}";
+        }
+
+        $categoryLink = [];
+        foreach($category as $currCategory)
+        {
+          $categoryLink[] = $currCategory;
+        }
+
+        $articles[] = [
+          "title" => $title,
+          "link" => $link,
+          "pubDate" => $pubDate,
+          "description" => $description,
+          "category" => $category,
+          "categoryLink" => $categoryLink,
+          "author" => $author
+        ];
+      });
+
+      // save cache in the temp folder
+      file_put_contents($cacheFile, serialize($articles));
+    }
 
 		// send data to the view
 		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("allStories.ejs", ["articles" => $stories]);
+		$response->setTemplate("allStories.ejs", ["articles" => $articles]);
 	}
 
 	/**
@@ -278,79 +352,6 @@ class Service
 			file_put_contents($fullPath, serialize($articles));
 		}
 
-		return $articles;
-	}
-
-	/**
-	 * Get all stories from a query
-	 *
-	 * @return array
-	 */
-	private function allStories()
-	{
-
-		// load from cache file if exists
-		$cacheFile = Utils::getTempDir() . date("YmdH") . 'diariodecuba.tmp';
-		if(file_exists($cacheFile))
-		{
-			$articles = unserialize(file_get_contents($cacheFile));
-		}
-		else
-		{
-			// create a new client
-			$client = new Client();
-			$guzzle = $client->getClient();
-			$client->setClient($guzzle);
-
-			// create a crawler
-			$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
-
-			// get all articles
-			$articles = [];
-			$crawler->filter('channel item')->each(function($item, $i) use (&$articles)
-			{
-				// get all parameters
-				$title = $item->filter('title')->text();
-				$link = $this->urlSplit($item->filter('link')->text());
-				$description = $item->filter('description')->text();
-				$description = trim(strip_tags($description));
-				$description = html_entity_decode($description);
-				$description = substr($description, 0, 200) . " ...";
-				$pubDate = $item->filter('pubDate')->text();
-				$category = $item->filter('category')->each(function($category, $j){ return $category->text(); });
-
-				if($item->filter('dc|creator')->count() == 0)
-				{
-					$author = "desconocido";
-				}
-				else
-				{
-					$authorString = trim($item->filter('dc|creator')->text());
-					$author = "{$authorString}";
-				}
-
-				$categoryLink = [];
-				foreach($category as $currCategory)
-				{
-					$categoryLink[] = $currCategory;
-				}
-
-				$articles[] = [
-					"title" => $title,
-					"link" => $link,
-					"pubDate" => $pubDate,
-					"description" => $description,
-					"category" => $category,
-					"categoryLink" => $categoryLink,
-					"author" => $author
-				];
-			});
-
-			// save cache in the temp folder
-			file_put_contents($cacheFile, serialize($articles));
-		}
-
-		// return response content
 		return $articles;
 	}
 
