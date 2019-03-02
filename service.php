@@ -161,7 +161,7 @@ class Service
 	public function _historia(Request $request, Response $response)
 	{
 		// get link to the article
-		$link = $request->input->data->link;
+		$link = $request->input->data->query;
 
 		// no allow blank entries
 		if(empty($link))
@@ -209,7 +209,7 @@ class Service
 	public function _categoria(Request $request, Response &$response)
 	{
 		// get the current category
-		$category = $request->input->data->category;
+		$category = $request->input->data->query;
 
 		// do not allow empty categories
 		if(empty($category))

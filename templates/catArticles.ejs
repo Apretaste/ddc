@@ -8,10 +8,14 @@
     </div>
 </div>
 
-<% articles.forEach(function(article){ %>
+<% articles.forEach(function(article, i){ %>
 <div class="row">
     <div class="col s12">
-        <h2><a href="#!" onclick="apretaste.send({command:'DIARIODECUBA HISTORIA', data:{link: article.link}})"><%= article.title %></a></h2>
+        <h2>
+            <a class="link link-simple" data-command = "DIARIODECUBA HISTORIA" data-query = "articles[<%= i %>].link">
+                <%= article.title %>
+            </a>
+        </h2>
         <%= article.description.substr(0,200) %>...<br/>
         <small>
             <font color="gray">
@@ -19,8 +23,8 @@
             </font>
         </small>
     </div>
-<% }); %>
 </div>
+<% }); %>
 
 <div class="row">
     <div class="col s6 m6">

@@ -2,19 +2,18 @@
     <div class = "col s12">
         <h1>Noticias de hoy</h1>
         <% articles.forEach(function(article, i) { %>
-        <h2>
-            <a class = "link link-simple" data-command = "DIARIODECUBA HISTORIA" data-query = "articles[<%= i %>].link">
-            <!-- <a href = "#!" onclick = "apretaste.send({command:'DIARIODECUBA HISTORIA', data:{link: articles[<%= i %>>].link }})">-->
-                <%= article.title %>
-            </a>
-        </h2>
-        <p><%= article.description %></p>
-        <p>Por <%= article.author %> el <%= formatDate(article.pubDate) %></p>
-        <% article['category'].forEach(function(category) { %>
-        <a href = "#!" onclick = "apretaste.send({command:'DIARIODECUBA CATEGORIA', data:{category: '<%= category =>'}})">
-            <div class = "chip"><%= category %></div>
-        </a>
-        <% }) %>
+            <h2>
+                <a class="link link-simple" data-command = "DIARIODECUBA HISTORIA" data-query = "articles[<%= i %>].link">
+                    <%= article.title %>
+                </a>
+            </h2>
+            <p><%= article.description %></p>
+            <p>Por <%= article.author %> el <%= formatDate(article.pubDate) %></p>
+            <% article['category'].forEach(function(cat, i) { %>
+                <a class="link link-simple" data-command = "DIARIODECUBA CATEGORIA" data-query = "category[i]">
+                    <div class = "chip"><%= cat %></div>
+                </a>
+            <% }) %>
         <% }) %>
     </div>
 </div>
