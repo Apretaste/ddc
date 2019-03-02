@@ -374,6 +374,7 @@ class Service
 
 		// search for title
 		$title = $crawler->filter('h1.title')->text();
+    $pubDate = $crawler->filter('pubDate')->text();
 
 		// get the intro
 
@@ -414,6 +415,7 @@ class Service
 			"img" => $img,
 			"imgAlt" => $imgAlt,
 			"content" => $content,
+      "pubDate" => $pubDate,
 			"url" => "http://www.diariodecuba.com/$query"
 		];
 	}
