@@ -178,7 +178,7 @@ class Service
 		// send the actual response
 		try
 		{
-			$responseContent = ['article' => $this->story($link)];
+			$responseContent = $this->story($link);
 		} catch(Exception $e)
 		{
 			$this->respondWithError($response);
