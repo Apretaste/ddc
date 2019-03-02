@@ -456,9 +456,9 @@ class Service
 		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("text.ejs", [
 			"title" => "Error inesperado",
-			"body" => "Lo siento pero hemos tenido un error inesperado. Enviamos una peticion para corregirlo. 
-                 Por favor intente nuevamente mas tarde.<br/> 
-                 Informaci&oacute;n t&eacute;cnica: <i>{$e->getMessage()}</i>"
+			"body" => html_entity_decode("Lo siento pero hemos tenido un error inesperado. Enviamos una peticion para corregirlo. 
+                 Por favor intente nuevamente mas tarde. 
+                 Informaci&oacute;n t&eacute;cnica: {$e->getFile()} {$e->getLine()}: {$e->getMessage()}")
 		]);
 	}
 }
