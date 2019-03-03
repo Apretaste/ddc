@@ -268,8 +268,7 @@ class Service
 				$articles[] = [
 					"description" => $item->filter('p.search-snippet')->text(),
 					"title" => $item->filter('h1.search-title > a')->text(),
-					"link" => str_replace('http://www.diariodecuba.com/', "", $item->filter('h1.search-title > a')->attr("href")),
-					"pubdate" =>  $item->filter('pubDate')->text()
+					"link" => str_replace('http://www.diariodecuba.com/', "", $item->filter('h1.search-title > a')->attr("href"))
 				];
 			});
 

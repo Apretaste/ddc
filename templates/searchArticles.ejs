@@ -7,12 +7,6 @@
 <% articles.forEach(function(article, i) { %>
 <div class="row">
     <div class="col s12">
-        <small>
-            <font color = "gray">
-            <%= formatDate(article.pubDate) %>
-            </font>
-        </small>
-        <br/>
         <b>
             <a class="link link-simple" data-command = "DIARIODECUBA HISTORIA" data-query = "articles[<%= i %>].link">
                 <%= article.title %>
