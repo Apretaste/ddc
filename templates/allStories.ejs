@@ -10,7 +10,7 @@
             <p><%= article.description %></p>
             <p>Por <%= article.author %> el <%= formatDate(article.pubDate) %></p>
             <% article.category.forEach(function(cat, i) { %>
-                <a class="link link-simple" data-command = "DIARIODECUBA CATEGORIA" data-query = "article.category[i]">
+                <a class="link link-simple" data-command = "DIARIODECUBA CATEGORIA" data-query = "article.category[<%= i %>]">
                     <div class = "chip"><%= cat %></div>
                 </a>
             <% }) %>
