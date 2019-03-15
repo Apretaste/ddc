@@ -1,6 +1,7 @@
 <?php
 
 use Goutte\Client;
+use Symfony\Component\DomCrawler\Crawler;
 
 class Service
 {
@@ -18,23 +19,11 @@ class Service
     $cacheFile = Utils::getTempDir() . date("YmdH") . 'diariodecuba.tmp';
 
     $articles = false;
-/*
-    $articles = [
-      [
-        "title" => "tremendo titulo",
-        "link" => "http://diariodecuba.com/blablabla",
-        "pubDate" => date("Y-m-d"),
-        "description" => str_repeat("tremendo articulo ",20),
-        "category" => ["Cuba"],
-        "categoryLink" => "/cuba",
-        "author" => "pepe"
-      ]
-    ];
-*/
-    if(file_exists($cacheFile))
+
+    /*if(file_exists($cacheFile))
     {
       $articles = @unserialize(@file_get_contents($cacheFile));
-    }
+    }*/
 
     if (!is_array($articles))
     {
@@ -56,35 +45,31 @@ class Service
         $description = $item->filter('description')->text();
         $description = trim(strip_tags($description));
         $description = html_entity_decode($description);
-        $description = substr($description, 0, 200) . " ...";
-        $pubDate = $item->filter('pubDate')->text();
+				$pubDate = $item->filter('pubDate')->text();
+				$pubDate = $item->filter('pubDate')->text();
+				setlocale(LC_ALL, 'es_ES.UTF-8');
+				$fecha = strftime("%B %d, %Y.",strtotime($pubDate)); 
+				$hora = date_format((new DateTime($pubDate)),'h:i a');
+				$pubDate = $fecha." ".$hora;
         $category = $item->filter('category')->each(function($category, $j){ return $category->text(); });
 
-        if($item->filter('dc|creator')->count() == 0)
-        {
-          $author = "desconocido";
-        }
-        else
-        {
-          $authorString = trim($item->filter('dc|creator')->text());
-          $author = "{$authorString}";
+        if($item->filter('dc|creator')->count() > 0){
+          $author = trim($item->filter('dc|creator')->text());
         }
 
         $categoryLink = [];
-        foreach($category as $currCategory)
-        {
-          $categoryLink[] = $currCategory;
-        }
-
-        $articles[] = [
-          "title" => $title,
-          "link" => $link,
-          "pubDate" => $pubDate,
-          "description" => $description,
-          "category" => $category,
-          "categoryLink" => $categoryLink,
-          "author" => $author
-        ];
+				foreach($category as $currCategory) $categoryLink[] = $currCategory;
+				
+				if(strpos($author, "DDC TV") === false)
+					$articles[] = [
+						"title" => $title,
+						"link" => $link,
+						"pubDate" => $pubDate,
+						"description" => $description,
+						"category" => $category,
+						"categoryLink" => $categoryLink,
+						"author" => isset($author) ? $author : ""
+					];
       });
 
       // save cache in the temp folder
@@ -92,8 +77,10 @@ class Service
     }
 
 		// send data to the view
+		$pathToService = Utils::getPathToService($response->serviceName);
 		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("allStories.ejs", ["articles" => $articles]);
+		$response->setTemplate("allStories.ejs", ["articles" => $articles],["$pathToService/images/diariodecuba-logo.png"]);
+		
 	}
 
 	/**
@@ -120,15 +107,7 @@ class Service
 		}
 
 		// search by the query
-		try
-		{
-			$articles = $this->searchArticles($request->input->data->searchQuery);
-		} catch(Exception $e)
-		{
-			$this->respondWithError($response, $e);
-
-			return;
-		}
+		$articles = $this->searchArticles($request->input->data->searchQuery);
 
 		// error if the search returns empty
 		if(empty($articles))
@@ -176,15 +155,7 @@ class Service
 		}
 
 		// send the actual response
-		try
-		{
-			$responseContent = $this->story($link);
-		} catch(Exception $e)
-		{
-			$this->respondWithError($response, $e);
-
-			return;
-		}
+		$responseContent = $this->story($link);
 
 		// get the image if exist
 		$images = [];
@@ -192,6 +163,14 @@ class Service
 		{
 			$images = [$responseContent['img']];
 		}
+
+		if(isset($request->input->data->search)){
+			$isCategory = $request->input->data->isCategory == "true";
+			$type = $isCategory ? "CATEGORIA" : "BUSCAR";
+			$param = $isCategory ? "query" : "searchQuery";
+			$responseContent['backButton'] = "{'command':'DIARIODECUBA $type', 'data':{'$param':'{$request->input->data->search}'}}";
+		}
+		else $responseContent['backButton'] = "{'command':'DIARIODECUBA'}";
 
 		$response->setCache();
 		$response->setLayout('diariodecuba.ejs');
@@ -230,7 +209,7 @@ class Service
 		];
 
 		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("catArticles.ejs", $content);
+		$response->setTemplate("searchArticles.ejs", $content);
 	}
 
 	/**
@@ -249,27 +228,48 @@ class Service
 
 		$articles = false;
 
-		if(file_exists($fullPath))
-		{
-			$articles = @unserialize(file_get_contents($fullPath));
-		}
+		if(file_exists($fullPath)) $articles = @unserialize(file_get_contents($fullPath));
 
-		if( ! is_array($articles))
-		{
+		if(!is_array($articles)){
 			// Setup crawler
 			$client = new Client();
-			$url = "http://www.diariodecuba.com/search/node/" . urlencode($query);
-			$crawler = $client->request('GET', $url);
-
-			// Collect saearch by term
 			$articles = [];
-			$crawler->filter('div.search-result')->each(function($item) use (&$articles)
-			{
-				$articles[] = [
-					"description" => $item->filter('p.search-snippet')->text(),
-					"title" => $item->filter('h1.search-title > a')->text(),
-					"link" => str_replace('http://www.diariodecuba.com/', "", $item->filter('h1.search-title > a')->attr("href"))
-				];
+			for ($i=0; $i < 2; $i++) {
+				$url = "http://www.diariodecuba.com/search/node/" . urlencode($query)."?page=$i";
+				$crawler = $client->request('GET', $url);
+				
+				$crawler->filter('div.search-result')->each(function($item) use (&$articles, $temp, $client){
+					if($item->filter('.audio-watermark, .video-watermark')->count()==0){
+						$link = $item->filter('h1.search-title > a')->attr("href");
+						$title = $item->filter('h1.search-title > a')->text();
+
+						$tmpFile = "$temp/article_".md5($title)."_ddc.html";
+
+						if(!file_exists($tmpFile)){
+							$html = file_get_contents($link);
+							file_put_contents($tmpFile, $html);
+						}
+
+						$pubDate = strtotime((new Crawler(file_get_contents($tmpFile)))->filter('meta[itemprop="datePublished"]')->attr('content'));
+
+						$articles[] = [
+							"description" => $item->filter('p.search-snippet')->text(),
+							"title" => $title,
+							"link" => str_replace('http://www.diariodecuba.com/', "", $link),
+							"pubDate" => $pubDate
+						];
+					}
+				});
+			}
+
+			usort($articles, function($a, $b){
+				return ($b["pubDate"]-$a["pubDate"]);
+			});
+
+			setlocale(LC_ALL, 'es_ES.UTF-8');
+
+			array_walk($articles, function(&$value){
+				$value["pubDate"] = strftime("%B %d, %Y.", $value["pubDate"])." ".date('h:i a', $value["pubDate"]);
 			});
 
 			file_put_contents($fullPath, serialize($articles));
@@ -294,58 +294,48 @@ class Service
 
 		$articles = false;
 
-		if(file_exists($fullPath))
+		/*if(file_exists($fullPath))
 		{
 			$articles = @unserialize(file_get_contents($fullPath));
-		}
+		}*/
 
 		if( ! is_array($articles))
 		{
 			// Setup crawler
 			$client = new Client();
-			$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
+			$crawler = $client->request('GET', "http://www.diariodecuba.com/etiquetas/$query.html");
 
 			// Collect articles by category
 			$articles = [];
-			$crawler->filter('channel item')->each(function($item, $i) use (&$articles, $query)
-			{
-				// if category matches, add to list of articles
-				$item->filter('category')->each(function($cat, $i) use (&$articles, $query, $item)
-				{
-					if(strtoupper($cat->text()) == strtoupper($query))
-					{
-						// $title = $item->filter('title')->text();
-						// $link = $this->urlSplit($item->filter('link')->text());
-						$pubDate = $item->filter('pubDate')->text();
-						// $description = $item->filter('description')->text();
-						// $cadenaAborrar = "/<!-- google_ad_section_start --><!-- google_ad_section_end --><p>/";
-						// $description = preg_replace($cadenaAborrar, '', $description);
-						// $description = preg_replace("/<\/?a[^>]*>/", '', $description);//quitamos las <a></a>
-						// $description = preg_replace("/<\/?p[^>]*>/", '', $description);//quitamos las <p></p>
+			$crawler->filter('.views-row')->each(function($item, $i) use (&$articles, $temp){
+				$link = $item->filter('.views-field-title span > a')->attr("href");
+				$title = $item->filter('.views-field-title span > a')->text();
 
-						$title = $item->filter('title')->text();
-						$link = $this->urlSplit($item->filter('link')->text());
-						$description = $item->filter('description')->text();
-						$description = trim(strip_tags($description));
-						$description = html_entity_decode($description);
-						$description = substr($description, 0, 200) . " ...";
+				$tmpFile = "$temp/article_".md5($title)."_ddc.html";
 
-						$author = "desconocido";
-						if($item->filter('dc|creator')->count() > 0)
-						{
-							$authorString = trim($item->filter('dc|creator')->text());
-							$author = "{$authorString}";
-						}
+				if(!file_exists($tmpFile)){
+					$html = file_get_contents("http://www.diariodecuba.com$link");
+					file_put_contents($tmpFile, $html);
+				}
 
-						$articles[] = [
-							"title" => $title,
-							"link" => $link,
-							"pubDate" => $pubDate,
-							"description" => $description,
-							"author" => $author
-						];
-					}
-				});
+				$pubDate = strtotime((new Crawler(file_get_contents($tmpFile)))->filter('meta[itemprop="datePublished"]')->attr('content'));
+
+				$articles[] = [
+					"description" => $item->filter('.views-field-field-summary-value p')->text(),
+					"title" => $title,
+					"link" => $link,
+					"pubDate" => $pubDate
+				];
+			});
+
+			usort($articles, function($a, $b){
+				return ($b["pubDate"]-$a["pubDate"]);
+			});
+
+			setlocale(LC_ALL, 'es_ES.UTF-8');
+
+			array_walk($articles, function(&$value){
+				$value["pubDate"] = strftime("%B %d, %Y.", $value["pubDate"])." ".date('h:i a', $value["pubDate"]);
 			});
 
 			file_put_contents($fullPath, serialize($articles));
@@ -381,7 +371,8 @@ class Service
 		$intro = $titleObj->count() > 0 ? $titleObj->text() : "";
 
 		// get the images
-		$imageObj = $crawler->filter('figure.field-field-image-content img');
+		$imageObj = $crawler->filter('figure.field-field-image .leading_image img');
+		
 		$imgUrl = "";
 		$imgAlt = "";
 		$img = "";

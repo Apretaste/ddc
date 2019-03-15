@@ -1,43 +1,70 @@
-@media only screen and (max-width: 600px) {
-    #container {
-        width: 100%;
-    }
+.materialboxed{
+    display: inline;
 }
-@media only screen and (max-width: 480px) {
-    .button {
-        display: block !important;
-    }
-    .button a {
-        display: block !important;
-        font-size: 18px !important; width: 100% !important;
-        max-width: 600px !important;
-    }
-    .section {
-        width: 100%;
-        margin: 2px 0px;
-        display: block;
-    }
-    .phone-block {
-        display: block;
-    }
+.chip.small{
+    height: 20px;
+    line-height: 20px;
+    padding: 0 8px;
 }
-body{
-    font-family: Arial;
+.collection, .collection-item {
+    border: 1px solid #F8F8F8;
+  
 }
-h1{
-    color: #C11414;
-    text-transform: uppercase;
-    font-size: 22px;
-    font-weight: normal;
+.collection {
+    border-top: none;
+    border-bottom: none;
 }
-h2{
-    color: #C11414;
-    text-transform: uppercase;
-    font-size: 16px;
-    margin-top: 30px;
-    font-weight: normal;
+.collection-item:first-of-type {
+    border-top: none;
+    padding-top: 0px;
 }
-.background{
-    background: white;
-    padding: 10px;
+.collection-item:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0px;
+}
+.responsive-img {
+    width: 100%;
+}
+
+.collection-item {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+#article > * {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+
+#logo {
+    max-height: 30px;
+    width: auto;
+    line-height: 0px;
+    position: RELATIVE;
+    bottom: -3px;
+}
+
+#footer {
+    padding:20px 0px; 
+    margin-top:20px;
+}
+
+.row{
+  margin-bottom: 0px;
+}
+
+.divider {
+  height: 1px;
+}
+
+#categoria-servicio{
+  position: absolute;
+  right: 12px;
+  bottom: 0px;
+}
+.relative{position: relative;}
+
+a, p{margin-bottom: 10px}
+
+#footer{
+    height: 60px;
 }

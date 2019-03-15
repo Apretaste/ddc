@@ -1,31 +1,23 @@
-<div class="row">
-	<div class="col s12 m12">
-		<% if (img) { %>
-		<img src="<%= img %>" alt="<%= imgAlt %>">
-			<span class="card-title"><%= imgAlt %></span>
-		<% } %>
-
-		<h1><%= title %></h1>
-	<small>
-		<font color = "gray">
-		<%= /*formatDate(pubDate)*/ %>
-		</font>
-	</small>
-		<p><%= intro %></p>
-		<% content.forEach(function(paragraph){ %>
-			<p><%= paragraph %></p>
-		<% }); %>
-		<p></p>
-
-		<a href="<%= url %>">Ver en la web</a>
-	</div>
-</div>
 
 <div class="row">
-	<div class="col s3 m3">
-		<button class="btn btn-default" onclick="apretaste.send({command: 'DIARIODECUBA'});">M&aacute;s noticias</button>
-	</div>
-	<div class="col s3 m3">
-		<button class="btn btn-default" onclick="apretaste.send({command: 'PIZARRA ESCRIBIR', data: {text: 'Miren esto: <%= url %>'}});">Compartir</button>
+	<div class="col s12" id="article">
+		<h2><%=title%></h2>
+		<%if(img!=""){%>
+			  <div class="center-align">	
+				  	<img class="responsive-img" src="{{APP_IMAGE_PATH}}/<%=img%>" alt="<%=imgAlt%>">
+				</div>
+		<%}%>
+		<blockquote>
+			<p><i><%=intro%></i></p>
+	  	</blockquote>
+		<section>
+			<% content.forEach(paragraph=>{%>
+			<p style="text-align:left;"><%=paragraph%></p>
+		<%});%>
+		</section>
+		
+		<div class="fixed-action-btn">
+			<a class="btn-floating btn-large waves-effect waves-light green" href="#!" onclick="apretaste.send(<%=backButton%>)"><i class="material-icons">arrow_back</i></a>
+		</div>
 	</div>
 </div>
