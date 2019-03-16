@@ -17,7 +17,7 @@
 					<br>
 					<%article.category.forEach(category =>{%>
 						<div class= "chip small">
-							<a href="#" class="grey-text text-darken-3" onclick="apretaste.send({'command':'DIARIODECUBA CATEGORIA','data':{'query':'<%=category%>'}})"><%=category%></a>
+							<a class="grey-text text-darken-3" onclick="apretaste.send({'command':'DIARIODECUBA CATEGORIA','data':{'query':'<%=category.link%>', 'caption':'<%=category.caption%>'}})"><%=category.caption%></a>
 						</div>
 					<%});%>
 								</small>         

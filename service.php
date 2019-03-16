@@ -51,14 +51,16 @@ class Service
 				$fecha = strftime("%B %d, %Y.",strtotime($pubDate)); 
 				$hora = date_format((new DateTime($pubDate)),'h:i a');
 				$pubDate = $fecha." ".$hora;
-        $category = $item->filter('category')->each(function($category, $j){ return $category->text(); });
+        $category = $item->filter('category')->each(function($category, $j){
+					$catLink = $category->attr('domain');
+					$catLink = rtrim(explode("etiquetas/", $catLink)[1], ".html");
+					$catCaption = $category->text();
+					return ["caption" => $catCaption, "link" => $catLink];
+				});
 
         if($item->filter('dc|creator')->count() > 0){
           $author = trim($item->filter('dc|creator')->text());
         }
-
-        $categoryLink = [];
-				foreach($category as $currCategory) $categoryLink[] = $currCategory;
 				
 				if(strpos($author, "DDC TV") === false)
 					$articles[] = [
@@ -67,7 +69,6 @@ class Service
 						"pubDate" => $pubDate,
 						"description" => $description,
 						"category" => $category,
-						"categoryLink" => $categoryLink,
 						"author" => isset($author) ? $author : ""
 					];
       });
@@ -189,6 +190,7 @@ class Service
 	{
 		// get the current category
 		$category = $request->input->data->query;
+		$caption = $request->input->data->caption;
 
 		// do not allow empty categories
 		if(empty($category))
@@ -205,7 +207,7 @@ class Service
 
 		$content = [
 			"articles" => $this->listArticles($category),
-			"category" => $category
+			"category" => $caption
 		];
 
 		$response->setLayout('diariodecuba.ejs');
@@ -320,6 +322,7 @@ class Service
 
 				$pubDate = strtotime((new Crawler(file_get_contents($tmpFile)))->filter('meta[itemprop="datePublished"]')->attr('content'));
 
+				if($item->filter('.audio-watermark, .video-watermark')->count()==0)
 				$articles[] = [
 					"description" => $item->filter('.views-field-field-summary-value p')->text(),
 					"title" => $title,
