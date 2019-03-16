@@ -7,9 +7,11 @@
 				  	<img class="responsive-img" src="{{APP_IMAGE_PATH}}/<%=img%>" alt="<%=imgAlt%>">
 				</div>
 		<%}%>
+		<small>
 		<blockquote>
 			<p><i><%=intro%></i></p>
-	  	</blockquote>
+		</blockquote>
+		</small> 
 		<section>
 			<% content.forEach(paragraph=>{%>
 			<p style="text-align:left;"><%=paragraph%></p>
