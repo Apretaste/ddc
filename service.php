@@ -65,7 +65,7 @@ class Service
 			"articles" => $articles,
 			"search" => $request->input->data->searchQuery
 		];
-		$response->setCache(240);
+		//$response->setCache(240);
 		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("searchArticles.ejs", $responseContent);
 	}
@@ -261,7 +261,9 @@ class Service
 
 				$pubDate = strtotime((new Crawler(file_get_contents($tmpFile)))->filter('meta[itemprop="datePublished"]')->attr('content'));
 
-				if($item->filter('.audio-watermark, .video-watermark')->count()==0)
+				
+				if($item->filter('.audio-watermark, .video-watermark, .photo-watermark')->count()==0)
+				
 				$articles[] = [
 					"description" => $item->filter('.views-field-field-summary-value p')->text(),
 					"title" => $title,
