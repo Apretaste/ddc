@@ -17,7 +17,7 @@ class Service
 	{
   	// send data to the view
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$response->setCache(1);
+		$response->setCache(60);
 		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("allStories.ejs", $this->allStories(),["$pathToService/images/diariodecuba-logo.png"]);
 		
