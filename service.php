@@ -15,75 +15,12 @@ class Service
 	 */
 	public function _main(Request $request, Response &$response)
 	{
-    // load from cache file if exists
-    $cacheFile = Utils::getTempDir() . date("YmdH") . 'diariodecuba.tmp';
-
-    $articles = false;
-
-    /*if(file_exists($cacheFile))
-    {
-      $articles = @unserialize(@file_get_contents($cacheFile));
-    }*/
-
-    if (!is_array($articles))
-    {
-      // create a new client
-      $client = new Client();
-      $guzzle = $client->getClient();
-      $client->setClient($guzzle);
-
-      // create a crawler
-      $crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
-
-      // get all articles
-      $articles = [];
-      $crawler->filter('channel item')->each(function($item, $i) use (&$articles)
-      {
-        // get all parameters
-        $title = $item->filter('title')->text();
-        $link = $this->urlSplit($item->filter('link')->text());
-        $description = $item->filter('description')->text();
-        $description = trim(strip_tags($description));
-        $description = html_entity_decode($description);
-				$pubDate = $item->filter('pubDate')->text();
-				$pubDate = $item->filter('pubDate')->text();
-				setlocale(LC_ALL, 'es_ES.UTF-8');
-				$fecha = strftime("%B %d, %Y.",strtotime($pubDate)); 
-				$hora = date_format((new DateTime($pubDate)),'h:i a');
-				$pubDate = $fecha." ".$hora;
-        $category = $item->filter('category')->each(function($category, $j){
-					$catLink = $category->attr('domain');
-					$catLink = rtrim(explode("etiquetas/", $catLink)[1], ".html");
-					$catCaption = $category->text();
-					return ["caption" => $catCaption, "link" => $catLink];
-				});
-
-        if($item->filter('dc|creator')->count() > 0){
-          $author = trim($item->filter('dc|creator')->text());
-        }
-				
-				if(strpos($author, "DDC TV") === false)
-					$articles[] = [
-						"title" => $title,
-						"link" => $link,
-						"pubDate" => $pubDate,
-						"description" => $description,
-						"category" => $category,
-						"author" => isset($author) ? $author : ""
-					];
-      });
-
-      // save cache in the temp folder
-      file_put_contents($cacheFile, serialize($articles));
-    }
-
-		// send data to the view
+  	// send data to the view
 		$pathToService = Utils::getPathToService($response->serviceName);
 		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("allStories.ejs", ["articles" => $articles],["$pathToService/images/diariodecuba-logo.png"]);
+		$response->setTemplate("allStories.ejs", $this->allStories(),["$pathToService/images/diariodecuba-logo.png"]);
 		
 	}
-
 	/**
 	 * Call to show the news
 	 *
@@ -225,7 +162,7 @@ class Service
 	{
 		// load from cache file if exists
 		$temp = Utils::getTempDir();
-		$fileName = date("YmdH") . md5($query) . '.tmp';
+		$fileName = date("YmdH") . md5($query) . 'search_diariodecuba.tmp';
 		$fullPath = "$temp/$fileName";
 
 		$articles = false;
@@ -356,6 +293,13 @@ class Service
 	 */
 	private function story($query)
 	{
+		$cacheFile = Utils::getTempDir(). md5($query) . date("YmdH") . 'story_diariodecuba.tmp';
+		$notice = false;
+
+		if(file_exists($cacheFile)) $notice = @unserialize(file_get_contents($cacheFile));
+
+		if(!is_array($notice)){
+		
 		// create a new client
 		$client = new Client();
 		$guzzle = $client->getClient();
@@ -366,7 +310,7 @@ class Service
 
 		// search for title
 		$title = $crawler->filter('h1.title')->text();
-    //$pubDate = $crawler->filter('pubDate')->text();
+    	//$pubDate = $crawler->filter('pubDate')->text();
 
 		// get the intro
 
@@ -375,7 +319,6 @@ class Service
 
 		// get the images
 		$imageObj = $crawler->filter('figure.field-field-image .leading_image img');
-		
 		$imgUrl = "";
 		$imgAlt = "";
 		$img = "";
@@ -402,15 +345,18 @@ class Service
 		}
 
 		// create a json object to send to the template
-		return [
+		$notice = [
 			"title" => $title,
 			"intro" => $intro,
 			"img" => $img,
 			"imgAlt" => $imgAlt,
 			"content" => $content,
-      //"pubDate" => $pubDate,
+    		//"pubDate" => $pubDate,
 			"url" => "http://www.diariodecuba.com/$query"
 		];
+		file_put_contents($cacheFile, serialize($notice));
+	}
+		return $notice;
 	}
 
 	/**
@@ -429,8 +375,71 @@ class Service
 		unset($url[2]);
 
 		return implode("/", $url);
-	}
 
+	}
+	
+	private function allStories()
+	{
+	// load from cache file if exists
+    $cacheFile = Utils::getTempDir(). date("YmdH") . 'main_diariodecuba.tmp';
+	$articles = false;
+
+    if(file_exists($cacheFile)) $articles = @unserialize(@file_get_contents($cacheFile));
+
+    if (!is_array($articles))
+    {
+      // create a new client
+      $client = new Client();
+      $guzzle = $client->getClient();
+      $client->setClient($guzzle);
+
+      // create a crawler
+      $crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
+
+      // get all articles
+      $articles = [];
+      $crawler->filter('channel item')->each(function($item, $i) use (&$articles)
+      {
+        // get all parameters
+        $title = $item->filter('title')->text();
+        $link = $this->urlSplit($item->filter('link')->text());
+        $description = $item->filter('description')->text();
+        $description = trim(strip_tags($description));
+        $description = html_entity_decode($description);
+				$pubDate = $item->filter('pubDate')->text();
+				$pubDate = $item->filter('pubDate')->text();
+				setlocale(LC_ALL, 'es_ES.UTF-8');
+				$fecha = strftime("%B %d, %Y.",strtotime($pubDate)); 
+				$hora = date_format((new DateTime($pubDate)),'h:i a');
+				$pubDate = $fecha." ".$hora;
+        $category = $item->filter('category')->each(function($category, $j){
+					$catLink = $category->attr('domain');
+					$catLink = rtrim(explode("etiquetas/", $catLink)[1], ".html");
+					$catCaption = $category->text();
+					return ["caption" => $catCaption, "link" => $catLink];
+				});
+
+        if($item->filter('dc|creator')->count() > 0){
+          $author = trim($item->filter('dc|creator')->text());
+        }
+				
+				if(strpos($author, "DDC TV") === false)
+					$articles[] = [
+						"title" => $title,
+						"link" => $link,
+						"pubDate" => $pubDate,
+						"description" => $description,
+						"category" => $category,
+						"author" => isset($author) ? $author : ""
+					];
+      });
+
+      // save cache in the temp folder
+      file_put_contents($cacheFile, serialize($articles));
+		}
+		return array("articles" => $articles);
+		
+	}
 	/**
 	 * Return a generic error email, usually for try...catch blocks
 	 *

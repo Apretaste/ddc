@@ -5,7 +5,7 @@
 			<li class="collection-item">
       	<%article.description=article.description.replace("leer más",'').trim()
       	if(article.description[article.description.length-1]!='.') article.description=article.description+'...'%>
-					<a href="#" onclick="apretaste.send({'command':'DIARIODECUBA HISTORIA','data':{'query':'<%=article.link%>'}})"><h6><b><%=article.title.toUpperCase()%></b></h6></a>
+					<a href="#!" onclick="apretaste.send({'command':'DIARIODECUBA HISTORIA','data':{'query':'<%=article.link%>'}})"><h6><b><%=article.title.toUpperCase()%></b></h6></a>
 					<%if(article.description.length!=0){%>
 						<p><%=article.description %></p>
 					<%}%>
@@ -20,7 +20,7 @@
 							<a class="grey-text text-darken-3" onclick="apretaste.send({'command':'DIARIODECUBA CATEGORIA','data':{'query':'<%=category.link%>', 'caption':'<%=category.caption%>'}})"><%=category.caption%></a>
 						</div>
 					<%});%>
-								</small>         
+				</small>         
 			</li>
 		<%});%>
 		</ul>
