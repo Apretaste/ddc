@@ -65,7 +65,7 @@ class Service
 			"articles" => $articles,
 			"search" => $request->input->data->searchQuery
 		];
-		//$response->setCache(240);
+		$response->setCache(240);
 		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("searchArticles.ejs", $responseContent);
 	}
@@ -147,8 +147,7 @@ class Service
 			"articles" => $this->listArticles($category),
 			"category" => $caption
 		];
-
-		
+		$response->setCache(240);
 		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("searchArticles.ejs", $content);
 	}
