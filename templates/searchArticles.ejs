@@ -12,7 +12,7 @@
 		<ul class="collection">	
 			<% articles.forEach(article =>{%>
                 <li class="collection-item">
-                    <a href="#!" onclick="apretaste.send({'command':'DIARIODECUBA HISTORIA','data':{'query':'<%=article.link%>','search':'<%=search%>', 'isCategory': '<%=isCategory%>'}})"><h6><b><%=article.title.toUpperCase()%></b></h6></a>
+                    <a href="#!" onclick="apretaste.send({'command':'DIARIODECUBA HISTORIA','data':{'query':'<%=article.link%>','search':'<%=search%>', 'isCategory': '<%=isCategory%>', 'title':'<%=article.title%>'}})"><h6><b><%=article.title.toUpperCase()%></b></h6></a>
                     <%if(article.description.length!=0){%>
 						<p><%=article.description %></p>
 					<%}%>
