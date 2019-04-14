@@ -5,6 +5,7 @@
     height: 20px;
     line-height: 20px;
     padding: 0 8px;
+    cursor: pointer;
 }
 .collection, .collection-item {
     border: 1px solid #F8F8F8;
@@ -67,4 +68,8 @@ a, p{margin-bottom: 10px}
 
 #footer{
     height: 60px;
+}
+
+h1, h6{
+    color: #000000;
 }

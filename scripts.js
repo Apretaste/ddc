@@ -1,26 +1,27 @@
 $(document).ready(function() {
-	$('.modal').modal();
+	// focus input when modal opens
+	$('.modal').modal({
+		onOpenEnd: function() {
+			$('#searchQuery').focus();
+		}
+	});
+
+	// submit search on enter
+	$('#searchQuery').keypress(function (e) {
+		if (e.which == 13) {
+			sendSearch();
+			return false;
+		}
+	});
 });
 
-function formatDate(dateStr) {
-	var date = new Date(dateStr);
-	var year = date.getFullYear();
-	var month = (1 + date.getMonth()).toString().padStart(2, '0');
-	var day = date.getDate().toString().padStart(2, '0');
-	return day + '/' + month + '/' + year;
-}
-
-function showToast(text) {
-    M.toast({html: text});
-}
-
 function sendSearch() {
-    let query = $('#searchQuery').val().trim();
-    if(query.length >= 2) {
-        apretaste.send({
-            'command':'DIARIODECUBA BUSCAR',
-            'data':{searchQuery: query}
-        });
-    }
-    else showToast('Minimo 2 caracteres');
+	var query = $('#searchQuery').val().trim();
+	if(query.length >= 5) {
+		apretaste.send({
+			'command':'DIARIODECUBA BUSCAR',
+			'data':{searchQuery: query}
+		});
+	}
+	else M.toast({html: 'Inserte mínimo 5 caracteres'});
 }

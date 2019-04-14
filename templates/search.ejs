@@ -1,0 +1,22 @@
+<div class="row">
+	<div class="col s12">
+		<h1>Buscando: <%= caption %></h1>
+		<ul class="collection">	
+			<% articles.forEach(function(article){ %>
+				<li class="collection-item">
+					<a href="#!" onclick="apretaste.send({'command':'DIARIODECUBA HISTORIA','data':{'query':'<%= article.link %>', 'title':'<%= article.title %>'}})">
+						<h6><b><%= article.title.toUpperCase() %></b></h6>
+					</a>
+
+					<% if(article.description.length > 0){ %>
+						<p><%= article.description %></p>
+					<% } %>
+				</li>
+			<% }) %>
+		</ul>
+
+		<div class="fixed-action-btn">
+			<a class="btn-floating btn-large waves-effect waves-light green" href="#!" onclick="apretaste.send({'command':'DIARIODECUBA'})"><i class="material-icons">arrow_back</i></a>
+		</div>
+	</div>
+</div>
