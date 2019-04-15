@@ -37,7 +37,7 @@ class Service
 				$description = $item->filter('description')->text();
 				$description = trim(strip_tags($description));
 				$description = html_entity_decode($description);
-				$description = $this->truncate($description, 160);
+				$description = php::truncate($description, 160);
 				$pubDate = $item->filter('pubDate')->text();
 				$pubDate = $item->filter('pubDate')->text();
 				setlocale(LC_ALL, 'es_ES.UTF-8');
@@ -86,19 +86,14 @@ class Service
 	 */
 	public function _buscar(Request $request, Response &$response)
 	{
-		// no allow blank entries
-		$query = $request->input->data->searchQuery;
-		if(empty($query)) {
-			return $response->setTemplate('message.ejs', [
-				"header" => "¿Qué desea buscar?",
-				"icon" => "sentiment_very_dissatisfied",
-				"text" => "Parece que está intentando realizar una búsqueda, pero no nos ha dicho que desea buscar. Regrese a la lista de noticias y escriba un término a buscar.",
-				"button" => ["href" => "DIARIODECUBA", "caption" => "Noticias"]
-			]);
+		// do no allow empty entries
+		if (empty($request->input->data->query)) {
+			return $this->error($response, "¿Qué desea buscar?", "Parece que está intentando realizar una búsqueda, pero no nos ha dicho que desea buscar. Regrese a la lista de noticias y escriba un término a buscar.");
 		}
 
 		// load from cache file if exists
 		$articles = false;
+		$query = $request->input->data->query;
 		$cleanQuery = preg_replace('/[^A-Za-z0-9]/', '', $query);
 		$fullPath = Utils::getTempDir() . date("Ymd") . md5($cleanQuery) . '_ddc_search.tmp';
 		if(file_exists($fullPath)) $articles = @unserialize(file_get_contents($fullPath));
@@ -117,7 +112,7 @@ class Service
 					$link = str_replace('http://www.diariodecuba.com/', "", $link);
 					$title = str_replace("'", "", $item->filter('h1.search-title > a')->text());
 					$description = $item->filter('p.search-snippet')->text();
-					$description = $this->truncate($description, 160);
+					$description = php::truncate($description, 160);
 				} catch(Exception $e) {
 					return;
 				}
@@ -137,12 +132,7 @@ class Service
 
 		// in case no results were found
 		if(empty($articles)) {
-			return $response->setTemplate('message.ejs', [
-				"header" => "No hay resultados",
-				"icon" => "sentiment_very_dissatisfied",
-				"text" => "Su búsqueda no generó ningún resultado. Por favor cambie los términos de búsqueda e intente nuevamente.",
-				"button" => ["href" => "DIARIODECUBA", "caption" => "Noticias"]
-			]);
+			return $this->error($response, "No hay resultados", "Su búsqueda no generó ningún resultado. Por favor cambie los términos de búsqueda e intente nuevamente.");
 		}
 
 		// send data to the template
@@ -161,10 +151,11 @@ class Service
 	{
 		// get link to the article
 		$link = $request->input->data->query;
+		$cleanLink = preg_replace('/[^A-Za-z0-9]/', '', $link);
 
 		// try to load story from the cache
 		$notice = false;
-		$cacheFile = Utils::getTempDir() . date("YmdH") . md5($link) . '_ddc_story.tmp';
+		$cacheFile = Utils::getTempDir() . md5($cleanLink) . '_ddc_story.tmp';
 		if(file_exists($cacheFile)) $notice = @unserialize(file_get_contents($cacheFile));
 
 		// if no cache, get from DDC
@@ -262,7 +253,7 @@ class Service
 					$link = $item->filter('.views-field-title span > a')->attr("href");
 					$title = str_replace("'", "", $item->filter('.views-field-title span > a')->text());
 					$description = $item->filter('.views-field-field-summary-value p')->text();
-					$description = $this->truncate($description, 160);
+					$description = php::truncate($description, 160);
 				} catch(Exception $e) {
 					return;
 				}
@@ -282,12 +273,7 @@ class Service
 
 		// in case no results were found
 		if(empty($articles)) {
-			return $response->setTemplate('message.ejs', [
-				"header" => "No hay resultados",
-				"icon" => "sentiment_very_dissatisfied",
-				"text" => "Es extraño, pero no hemos encontrado resultados para esta categoría. Estamos revisando a ver que ocurre.",
-				"button" => ["href" => "DIARIODECUBA", "caption" => "Noticias"]
-			]);
+			return $this->error($response, "No hay resultados", "Es extraño, pero no hemos encontrado resultados para esta categoría. Estamos revisando a ver que ocurre.");
 		}
 
 		// send data to the view
@@ -297,27 +283,21 @@ class Service
 	}
 
 	/**
-	 * Cut a string without breaking words 
+	 * Return an error message
 	 *
 	 * @author salvipascual
-	 * @param String $text
-	 * @param Integer $count
-	 * @return String
+	 * @param Response $response
+	 * @param String $title 
+	 * @param String $desc 
+	 * @return Response
 	 */
-	private function truncate($text, $count)
+	private function error(Response $response, $title, $desc)
 	{
-		// do not cut shorter strings
-		if(strlen($text) <= $count) return $text;
+		// display show error in the log
+		error_log("[DIARIODECUBA] $title | $desc");
 
-		// cut the string
-		$cut_text = substr($text, 0, $count);
-
-		// cut orphan words
-		if ($text{$count - 1} != ' ') { // if not a space
-			$new_pos 	= strrpos($cut_text, ' '); // find the space from the last character
-			$cut_text 	= substr($text, 0, $new_pos);
-		}
-
-		return $cut_text . '...';
+		// return error template
+		$response->setLayout('diariodecuba.ejs');
+		return $response->setTemplate('message.ejs', ["header" => $title, "text" => $desc]);
 	}
 }

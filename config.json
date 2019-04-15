@@ -1,7 +1,7 @@
 {
 	"name": "diariodecuba",
-	"version": "2",
-	"description": "Muestra los titulares de Diario de Cuba y permite leer las noticias mas recientes",
+	"version": "3",
+	"description": "Muestra los titulares del Diario de Cuba y permite leer las noticias más recientes",
 	"category": "informativo",
 	"creator": "pdiaz@diariodecuba.com",
 	"listed": true

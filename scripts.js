@@ -2,12 +2,12 @@ $(document).ready(function() {
 	// focus input when modal opens
 	$('.modal').modal({
 		onOpenEnd: function() {
-			$('#searchQuery').focus();
+			$('#query').focus();
 		}
 	});
 
 	// submit search on enter
-	$('#searchQuery').keypress(function (e) {
+	$('#query').keypress(function (e) {
 		if (e.which == 13) {
 			sendSearch();
 			return false;
@@ -16,11 +16,11 @@ $(document).ready(function() {
 });
 
 function sendSearch() {
-	var query = $('#searchQuery').val().trim();
+	var query = $('#query').val().trim();
 	if(query.length >= 5) {
 		apretaste.send({
 			'command':'DIARIODECUBA BUSCAR',
-			'data':{searchQuery: query}
+			'data':{query: query}
 		});
 	}
 	else M.toast({html: 'Inserte mínimo 5 caracteres'});

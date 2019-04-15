@@ -4,7 +4,7 @@
 			<% articles.forEach(function(article){ %>
 				<li class="collection-item">
 					<a href="#!" onclick="apretaste.send({'command':'DIARIODECUBA HISTORIA','data':{'query':'<%= article.link %>', 'title':'<%= article.title %>'}})">
-						<h6><b><%= article.title.toUpperCase() %></b></h6>
+						<h6><%= article.title %></h6>
 					</a>
 
 					<% if(article.description.length != 0){ %>
@@ -21,7 +21,7 @@
 
 						<% article.category.forEach(function(category){ %>
 							<div class="chip small">
-								<a class="grey-text text-darken-3" onclick="apretaste.send({'command':'DIARIODECUBA CATEGORIA','data':{'query':'<%= category.link %>', 'caption':'<%= category.caption %>'}})"><%= category.caption %></a>
+								<a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'DIARIODECUBA CATEGORIA','data':{'query':'<%= category.link %>', 'caption':'<%= category.caption %>'}})"><%= category.caption %></a>
 							</div>
 						<% }) %>
 					</small>
@@ -39,13 +39,13 @@
 	<div id="searchModal" class="modal bottom-sheet">
 		<div class="modal-content">
 			<div class="input-field">
-				<textarea id="searchQuery" class="materialize-textarea"></textarea>
+				<textarea id="query" class="materialize-textarea"></textarea>
 				<label for="note">Buscar</label>
 			</div>
 		</div>
 		<div class="modal-footer">
 			<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-			<a onclick="sendSearch()" class="modal-close waves-effect waves-green btn-flat">Buscar</a>
+			<a href="#!" onclick="sendSearch()" class="modal-close waves-effect waves-green btn-flat">Buscar</a>
 		</div>
 	</div>
 </div>
