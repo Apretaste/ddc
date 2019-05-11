@@ -15,9 +15,9 @@
 		</small>
 
 		<section>
-			<% content.forEach(function(paragraph){ %>
-				<p style="text-align:left;"><%= paragraph %></p>
-			<% }) %>
+			<% for(var i=0; i<content.length; i++) { %>
+				<p style="text-align:left;"><%= content[i] %></p>
+			<% } %>
 		</section>
 
 		<div class="fixed-action-btn">

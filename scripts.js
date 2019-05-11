@@ -17,11 +17,11 @@ $(document).ready(function() {
 
 function sendSearch() {
 	var query = $('#query').val().trim();
-	if(query.length >= 5) {
+	if(query.length >= 3) {
 		apretaste.send({
 			'command':'DIARIODECUBA BUSCAR',
 			'data':{query: query}
 		});
 	}
-	else M.toast({html: 'Inserte mínimo 5 caracteres'});
+	else M.toast({html: 'Inserte mínimo 3 caracteres'});
 }
