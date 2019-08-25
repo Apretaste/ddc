@@ -5,7 +5,7 @@
 		<ul class="collection">
 			<% for(var i=0; i<articles.length; i++) { %>
 				<li class="collection-item">
-					<a href="#!" onclick="apretaste.send({'command':'DIARIODECUBA HISTORIA','data':{'query':'<%= articles[i].link %>', 'title':'<%= articles[i].title %>'}})">
+					<a href="#!" onclick="apretaste.send({'command':'DDC HISTORIA','data':{'query':'<%= articles[i].link %>', 'title':'<%= articles[i].title %>'}})">
 						<h6><%= articles[i].title %></h6>
 					</a>
 
@@ -17,7 +17,7 @@
 		</ul>
 
 		<div class="fixed-action-btn">
-			<a class="btn-floating btn-large waves-effect waves-light" href="#!" onclick="apretaste.send({'command':'DIARIODECUBA'})"><i class="material-icons">arrow_back</i></a>
+			<a class="btn-floating btn-large waves-effect waves-light" href="#!" onclick="apretaste.send({'command':'DDC'})"><i class="material-icons">arrow_back</i></a>
 		</div>
 	</div>
 </div>

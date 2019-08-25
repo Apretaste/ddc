@@ -74,7 +74,7 @@ class Service
 		// send data to the view
 		$response->setCache(60);
 		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("stories.ejs", ["articles" => $articles], [Utils::getPathToService("diariodecuba")."/images/diariodecuba-logo.png"]);
+		$response->setTemplate("stories.ejs", ["articles" => $articles], [Utils::getPathToService("ddc")."/images/diariodecuba-logo.png"]);
 	}
 
 	/**
@@ -216,7 +216,7 @@ class Service
 		$images = empty($notice['img']) ? [] : [$notice['img']];
 		$notice['img'] = basename($notice['img']);
 
-		$images[] = Utils::getPathToService("diariodecuba")."/images/diariodecuba-logo.png";
+		$images[] = Utils::getPathToService("ddc")."/images/diariodecuba-logo.png";
 
 		// send info to the view
 		$response->setCache();
@@ -281,7 +281,7 @@ class Service
 		// send data to the view
 		$response->setCache(240);
 		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("search.ejs", ["articles"=>$articles, "caption"=>$caption], [Utils::getPathToService("diariodecuba")."/images/diariodecuba-logo.png"]);
+		$response->setTemplate("search.ejs", ["articles"=>$articles, "caption"=>$caption], [Utils::getPathToService("ddc")."/images/diariodecuba-logo.png"]);
 	}
 
 	/**
