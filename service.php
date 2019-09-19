@@ -35,7 +35,7 @@ class Service
                     'description' => str_replace([
                         '(Feed generated with FetchRSS)'
                     ],'',strip_tags((string)$item->description)),
-                    'category'    => ['Noticias'],
+                    'category'    => [],
                     'author'      => (string)$item->$creator
                 ];
             }
