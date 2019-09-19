@@ -14,6 +14,8 @@ class Service
 	 */
 	public function _main(Request $request, Response &$response)
 	{
+	    $url = "http://fetchrss.com/rss/5d7945108a93f8666f8b45675d7a44858a93f83a5e8b4569.xml";
+
 		// try to get articles from the cache
 		$articles = false;
 		$cacheFile = Utils::getTempDir(). date("YmdH") . '_ddc_news.tmp';
@@ -21,7 +23,25 @@ class Service
 
 		// if not in cache, get from DDC website
 		if (!is_array($articles)) {
+            $rss = Feed::loadRss($url);
+
+            $articles = [];
+            $creator = "dc:creator";
+            foreach ($rss->item as $item) {
+                $articles[] = [
+                    'title'       => strip_tags((string)$item->title),
+                    'link'        => (string)$item->link,
+                    'pubDate'     => date('m/d/Y H:i:s', (int) $item->timestamp),
+                    'description' => str_replace([
+                        '(Feed generated with FetchRSS)'
+                    ],'',strip_tags((string)$item->description)),
+                    'category'    => ['Noticias'],
+                    'author'      => (string)$item->$creator
+                ];
+            }
+
 			// create a new client
+            /*
 			$client = new Client();
 			$guzzle = $client->getClient();
 			$client->setClient($guzzle);
@@ -66,7 +86,7 @@ class Service
 						"author" => isset($author) ? $author : ""];
 				}
 			});
-
+*/
 			// save cache in the temp folder
 			file_put_contents($cacheFile, serialize($articles));
 		}
