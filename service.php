@@ -216,7 +216,7 @@ class Service
 			}
 
 			// get the array of paragraphs of the body
-			$paragraphs = $crawler->filter('div.node div.content p');
+			$paragraphs = $crawler->filter('article.node div.content p');
 			$content = [];
 			foreach($paragraphs as $p) {
 				$content[] = trim($p->textContent);
