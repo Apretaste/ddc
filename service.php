@@ -1,5 +1,6 @@
 <?php
 
+use Apretaste\Core;
 use Goutte\Client;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -184,6 +185,8 @@ class Service
 			$client = new Client();
 			$guzzle = $client->getClient();
 			$client->setClient($guzzle);
+
+			Core::log("GET history $link", "ddc");
 
 			// create a crawler
 			$crawler = $client->request('GET', $link /*"http://www.diariodecuba.com/$link"*/);
