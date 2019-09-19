@@ -192,7 +192,7 @@ class Service
 			$crawler = $client->request('GET', $link /*"http://www.diariodecuba.com/$link"*/);
 
 			// search for title
-			$title = $crawler->filter('h1.title')->text();
+			$title = $crawler->filter('h1.article-title')->text();
 
 			// get the intro
 			$titleObj = $crawler->filter('div.content:nth-child(1) p:nth-child(1)');
