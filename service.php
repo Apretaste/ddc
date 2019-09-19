@@ -175,7 +175,7 @@ class Service
 
 		// try to load story from the cache
 		$notice = false;
-		$cacheFile = Utils::getTempDir() . md5($cleanLink) . '_ddc_story.tmp';
+		$cacheFile = Utils::getTempDir() . md5($cleanLink) . '_ddc_story_'.md5_file(__FILE__).'.tmp';
 		if(file_exists($cacheFile)) $notice = @unserialize(file_get_contents($cacheFile));
 
 		// if no cache, get from DDC
@@ -186,7 +186,7 @@ class Service
 			$client->setClient($guzzle);
 
 			// create a crawler
-			$crawler = $client->request('GET', "http://www.diariodecuba.com/$link");
+			$crawler = $client->request('GET', $link /*"http://www.diariodecuba.com/$link"*/);
 
 			// search for title
 			$title = $crawler->filter('h1.title')->text();
