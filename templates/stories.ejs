@@ -3,7 +3,13 @@
 		<ul class="collection">
 			<% for(var i=0; i<articles.length; i++) { %>
 				<li class="collection-item">
-					<a href="#!" onclick="apretaste.send({'command':'DDC HISTORIA','data':{'query':'<%= articles[i].link %>', 'title':'<%= articles[i].title %>'}})">
+					<a href="#!" onclick="apretaste.send({
+							command: 'DDC HISTORIA',
+							data:{
+								query: articles[<%= i %>].link,
+							    title: articles[<%= i %>].title
+							}
+					})">
 						<h6><%= articles[i].title %></h6>
 					</a>
 
@@ -21,7 +27,7 @@
 
 						<% for(var j=0; j<articles[i].category.length; j++) { %>
 							<div class="chip small">
-								<a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'DIARIODECUBA CATEGORIA','data':{'query':'<%= articles[i].category[j].link %>', 'caption':'<%= articles[i].category[j].caption %>'}})"><%= articles[i].category[j].caption %></a>
+								<a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'DIARIODECUBA CATEGORIA','data':{'query': '<%= articles[i].category[j].link %>', 'caption':'<%= articles[i].category[j].caption %>'}})"><%= articles[i].category[j].caption %></a>
 							</div>
 						<% } %>
 					</small>
