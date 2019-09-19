@@ -18,7 +18,7 @@ class Service
 
 		// try to get articles from the cache
 		$articles = false;
-		$cacheFile = Utils::getTempDir(). date("YmdH") . '_ddc_news.tmp';
+		$cacheFile = Utils::getTempDir(). date("YmdH") . '_ddc_news_'.md5_file(__FILE__).'.tmp';
 		if(file_exists($cacheFile)) $articles = @unserialize(@file_get_contents($cacheFile));
 
 		// if not in cache, get from DDC website
