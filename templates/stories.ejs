@@ -27,7 +27,7 @@
 
 						<% for(var j=0; j<articles[i].category.length; j++) { %>
 							<div class="chip small">
-								<a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'DIARIODECUBA CATEGORIA','data':{'query': '<%= articles[i].category[j].link %>', 'caption':'<%= articles[i].category[j].caption %>'}})"><%= articles[i].category[j].caption %></a>
+								<a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'DDC CATEGORIA','data':{'query': '<%= articles[i].category[j].link %>', 'caption':'<%= articles[i].category[j].caption %>'}})"><%= articles[i].category[j].caption %></a>
 							</div>
 						<% } %>
 					</small>
