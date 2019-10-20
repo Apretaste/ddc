@@ -19,7 +19,7 @@ function sendSearch() {
   var query = $('#query').val().trim();
   if (query.length >= 3) {
     apretaste.send({
-      'command': 'DIARIODECUBA BUSCAR',
+      'command': 'DDC BUSCAR',
       'data': {query: query}
     });
   }
