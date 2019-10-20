@@ -197,6 +197,12 @@ class Service
             // create a crawler
             $crawler = $client->request('GET', $link , ["allow_redirect" => true] /*"http://www.diariodecuba.com/$link"*/);
 
+            if ($response->getStatusCode() !== 200) {
+                Utils::createAlert("[DDC] Error retrieving $link");
+	            $response->setTemplate('message.ejs', ["header" => "Contenido no encontrado", "text" => "El contenido solicitado no ha sido encontrado en Diario de Cuba"]);
+				return;
+            }
+
             // search for title
             $title = $crawler->filter('h1.article-title');
 
