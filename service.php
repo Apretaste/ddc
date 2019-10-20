@@ -195,7 +195,7 @@ class Service
             Core::log("GET history $link", "ddc");
 
             // create a crawler
-            $crawler = $client->request('GET', $link /*"http://www.diariodecuba.com/$link"*/);
+            $crawler = $client->request('GET', $link , ["allow_redirect" => true] /*"http://www.diariodecuba.com/$link"*/);
 
             // search for title
             $title = $crawler->filter('h1.article-title');
@@ -203,8 +203,7 @@ class Service
 	        if ($title->count() < 1)
 		        $title = $crawler->filter('h1.title');
 
-	        if ($title->count() > 0)
-	            $title = $title->text();
+            $title = $title->text();
 
             // get the intro
             $titleObj = $crawler->filter('div.content:nth-child(1) p:nth-child(1)');
