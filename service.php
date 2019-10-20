@@ -266,7 +266,7 @@ class Service
         $images[] = Utils::getPathToService("ddc")."/images/diariodecuba-logo.png";
 
         // send info to the view
-        $response->setCache();
+        //$response->setCache();
         $response->setLayout('diariodecuba.ejs');
         $response->setTemplate("story.ejs", $notice, $images);
     }
