@@ -203,7 +203,8 @@ class Service
 	        if ($title->count() < 1)
 		        $title = $crawler->filter('h1.title');
 
-	        $title = $title->text();
+	        if ($title->count() > 0)
+	            $title = $title->text();
 
             // get the intro
             $titleObj = $crawler->filter('div.content:nth-child(1) p:nth-child(1)');
