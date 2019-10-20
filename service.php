@@ -197,7 +197,10 @@ class Service
             // create a crawler
             $crawler = $client->request('GET', $link , ["allow_redirect" => true] /*"http://www.diariodecuba.com/$link"*/);
 
-            if ($crawler->getStatusCode() !== 200) {
+            /** @var \Symfony\Component\BrowserKit\Response $httpResponse */
+			$httpResponse = $client->getResponse();
+
+            if ($httpResponse !== null && $httpResponse->getStatus() !== 200) {
                 Utils::createAlert("[DDC] Error retrieving $link");
 	            $response->setTemplate('message.ejs', ["header" => "Contenido no encontrado", "text" => "El contenido solicitado no ha sido encontrado en Diario de Cuba"]);
 				return;
