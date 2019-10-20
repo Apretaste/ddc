@@ -6,24 +6,26 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class Service
 {
-	/**
-	 * Get the list of news
-	 *
-	 * @author salvipascual
-	 * @param Request
-	 * @param Response
-	 */
-	public function _main(Request $request, Response &$response)
-	{
-	    $url = "http://fetchrss.com/rss/5d7945108a93f8666f8b45675d7a44858a93f83a5e8b4569.xml";
+    /**
+     * Get the list of news
+     *
+     * @author salvipascual
+     * @param Request
+     * @param Response
+     */
+    public function _main(Request $request, Response &$response)
+    {
+        $url = "http://fetchrss.com/rss/5d7945108a93f8666f8b45675d7a44858a93f83a5e8b4569.xml";
 
-		// try to get articles from the cache
-		$articles = false;
-		$cacheFile = Utils::getTempDir(). date("YmdH") . '_ddc_news_'.md5_file(__FILE__).'.tmp';
-		if(file_exists($cacheFile)) $articles = @unserialize(@file_get_contents($cacheFile));
+        // try to get articles from the cache
+        $articles = false;
+        $cacheFile = Utils::getTempDir(). date("YmdH") . '_ddc_news_'.md5_file(__FILE__).'.tmp';
+        if (file_exists($cacheFile)) {
+            $articles = @unserialize(@file_get_contents($cacheFile));
+        }
 
-		// if not in cache, get from DDC website
-		if (!is_array($articles)) {
+        // if not in cache, get from DDC website
+        if (!is_array($articles)) {
             $rss = Feed::loadRss($url);
 
             $articles = [];
@@ -35,294 +37,309 @@ class Service
                     'pubDate'     => date('m/d/Y H:i:s', (int) $item->timestamp),
                     'description' => str_replace([
                         '(Feed generated with FetchRSS)'
-                    ],'',strip_tags((string)$item->description)),
+                    ], '', strip_tags((string)$item->description)),
                     'category'    => [],
                     'author'      => (string)$item->$creator
                 ];
             }
 
-			// create a new client
+            // create a new client
             /*
-			$client = new Client();
-			$guzzle = $client->getClient();
-			$client->setClient($guzzle);
-			$crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
+            $client = new Client();
+            $guzzle = $client->getClient();
+            $client->setClient($guzzle);
+            $crawler = $client->request('GET', "http://www.diariodecuba.com/rss.xml");
 
-			// get all articles
-			$articles = [];
-			$crawler->filter('channel item')->each(function($item, $i) use (&$articles) {
-				// get all parameters
-				$title = str_replace("'", "", $item->filter('title')->text());
-				$link = $item->filter('link')->text();
-				$link = str_replace('http://www.diariodecuba.com/', "", $link);
-				$description = $item->filter('description')->text();
-				$description = trim(strip_tags($description));
-				$description = html_entity_decode($description);
-				$description = php::truncate($description, 160);
-				$pubDate = $item->filter('pubDate')->text();
-				$pubDate = $item->filter('pubDate')->text();
-				setlocale(LC_ALL, 'es_ES.UTF-8');
-				$fecha = strftime("%B %d, %Y.",strtotime($pubDate)); 
-				$hora = date_format((new DateTime($pubDate)),'h:i a');
-				$pubDate = $fecha." ".$hora;
+            // get all articles
+            $articles = [];
+            $crawler->filter('channel item')->each(function($item, $i) use (&$articles) {
+                // get all parameters
+                $title = str_replace("'", "", $item->filter('title')->text());
+                $link = $item->filter('link')->text();
+                $link = str_replace('http://www.diariodecuba.com/', "", $link);
+                $description = $item->filter('description')->text();
+                $description = trim(strip_tags($description));
+                $description = html_entity_decode($description);
+                $description = php::truncate($description, 160);
+                $pubDate = $item->filter('pubDate')->text();
+                $pubDate = $item->filter('pubDate')->text();
+                setlocale(LC_ALL, 'es_ES.UTF-8');
+                $fecha = strftime("%B %d, %Y.",strtotime($pubDate));
+                $hora = date_format((new DateTime($pubDate)),'h:i a');
+                $pubDate = $fecha." ".$hora;
 
-				$category = $item->filter('category')->each(function($category, $j){
-					$catLink = $category->attr('domain');
-					$catLink = rtrim(explode("etiquetas/", $catLink)[1], ".html");
-					$catCaption = $category->text();
-					return ["caption" => $catCaption, "link" => $catLink];
-				});
+                $category = $item->filter('category')->each(function($category, $j){
+                    $catLink = $category->attr('domain');
+                    $catLink = rtrim(explode("etiquetas/", $catLink)[1], ".html");
+                    $catCaption = $category->text();
+                    return ["caption" => $catCaption, "link" => $catLink];
+                });
 
-				if($item->filter('dc|creator')->count() > 0){
-					$author = trim($item->filter('dc|creator')->text());
-				}
+                if($item->filter('dc|creator')->count() > 0){
+                    $author = trim($item->filter('dc|creator')->text());
+                }
 
-				if(strpos($author, "DDC TV") === false) {
-					$articles[] = [
-						"title" => $title,
-						"link" => $link,
-						"pubDate" => $pubDate,
-						"description" => $description,
-						"category" => $category,
-						"author" => isset($author) ? $author : ""];
-				}
-			});
+                if(strpos($author, "DDC TV") === false) {
+                    $articles[] = [
+                        "title" => $title,
+                        "link" => $link,
+                        "pubDate" => $pubDate,
+                        "description" => $description,
+                        "category" => $category,
+                        "author" => isset($author) ? $author : ""];
+                }
+            });
 */
-			// save cache in the temp folder
-			file_put_contents($cacheFile, serialize($articles));
-		}
+            // save cache in the temp folder
+            file_put_contents($cacheFile, serialize($articles));
+        }
 
-		// send data to the view
-		$response->setCache(60);
-		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("stories.ejs", ["articles" => $articles], [Utils::getPathToService("ddc")."/images/diariodecuba-logo.png"]);
-	}
+        // send data to the view
+        $response->setCache(60);
+        $response->setLayout('diariodecuba.ejs');
+        $response->setTemplate("stories.ejs", ["articles" => $articles], [Utils::getPathToService("ddc")."/images/diariodecuba-logo.png"]);
+    }
 
-	/**
-	 * Search the news for a term 
-	 *
-	 * @author salvipascual
-	 * @param Request
-	 * @param Response
-	 */
-	public function _buscar(Request $request, Response &$response)
-	{
-		// do no allow empty entries
-		if (empty($request->input->data->query)) {
-			return $this->error($response, "¿Qué desea buscar?", "Parece que está intentando realizar una búsqueda, pero no nos ha dicho que desea buscar. Regrese a la lista de noticias y escriba un término a buscar.");
-		}
+    /**
+     * Search the news for a term
+     *
+     * @author salvipascual
+     * @param Request
+     * @param Response
+     */
+    public function _buscar(Request $request, Response &$response)
+    {
+        // do no allow empty entries
+        if (empty($request->input->data->query)) {
+            return $this->error($response, "¿Qué desea buscar?", "Parece que está intentando realizar una búsqueda, pero no nos ha dicho que desea buscar. Regrese a la lista de noticias y escriba un término a buscar.");
+        }
 
-		// load from cache file if exists
-		$articles = false;
-		$query = $request->input->data->query;
-		$cleanQuery = preg_replace('/[^A-Za-z0-9]/', '', $query);
-		$fullPath = Utils::getTempDir() . date("Ymd") . md5($cleanQuery) . '_ddc_search.tmp';
-		if(file_exists($fullPath)) $articles = @unserialize(file_get_contents($fullPath));
+        // load from cache file if exists
+        $articles = false;
+        $query = $request->input->data->query;
+        $cleanQuery = preg_replace('/[^A-Za-z0-9]/', '', $query);
+        $fullPath = Utils::getTempDir() . date("Ymd") . md5($cleanQuery) . '_ddc_search.tmp';
+        if (file_exists($fullPath)) {
+            $articles = @unserialize(file_get_contents($fullPath));
+        }
 
-		// if cache do not exist, load from DDC
-		if(!is_array($articles)) {
-			// Setup crawler
-			$client = new Client();
-			$crawler = $client->request('GET', "http://www.diariodecuba.com/search/node/".urlencode($query)."?page=0");
+        // if cache do not exist, load from DDC
+        if (!is_array($articles)) {
+            // Setup crawler
+            $client = new Client();
+            $crawler = $client->request('GET', "http://www.diariodecuba.com/search/node/".urlencode($query)."?page=0");
 
-			// Collect articles by category
-			$articles = [];
-			$crawler->filter('div.search-result')->each(function($item) use (&$articles){
-				try {
-					$link = $item->filter('h1.search-title > a')->attr("href");
-					$link = str_replace('http://www.diariodecuba.com/', "", $link);
-					$title = str_replace("'", "", $item->filter('h1.search-title > a')->text());
-					$description = $item->filter('p.search-snippet')->text();
-					$description = php::truncate($description, 160);
-				} catch(Exception $e) {
-					return;
-				}
+            // Collect articles by category
+            $articles = [];
+            $crawler->filter('div.search-result')->each(function ($item) use (&$articles) {
+                try {
+                    $link = $item->filter('h1.search-title > a')->attr("href");
+                    $link = str_replace('http://www.diariodecuba.com/', "", $link);
+                    $title = str_replace("'", "", $item->filter('h1.search-title > a')->text());
+                    $description = $item->filter('p.search-snippet')->text();
+                    $description = php::truncate($description, 160);
+                } catch (Exception $e) {
+                    return;
+                }
 
-				// add to the list of articles
-				$articles[] = [
-					"title" => $title,
-					"link" => $link,
-					"description" => $description
-				];
-			});
+                // add to the list of articles
+                $articles[] = [
+                    "title" => $title,
+                    "link" => $link,
+                    "description" => $description
+                ];
+            });
 
-			// save to cache
-			setlocale(LC_ALL, 'es_ES.UTF-8');
-			file_put_contents($fullPath, serialize($articles));
-		}
+            // save to cache
+            setlocale(LC_ALL, 'es_ES.UTF-8');
+            file_put_contents($fullPath, serialize($articles));
+        }
 
-		// in case no results were found
-		if(empty($articles)) {
-			return $this->error($response, "No hay resultados", "Su búsqueda no generó ningún resultado. Por favor cambie los términos de búsqueda e intente nuevamente.");
-		}
+        // in case no results were found
+        if (empty($articles)) {
+            return $this->error($response, "No hay resultados", "Su búsqueda no generó ningún resultado. Por favor cambie los términos de búsqueda e intente nuevamente.");
+        }
 
-		// send data to the template
-		$response->setCache(240);
-		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("search.ejs", ["articles" => $articles, "caption" => $query], [Utils::getPathToService("diariodecuba")."/images/diariodecuba-logo.png"]);
-	}
+        // send data to the template
+        $response->setCache(240);
+        $response->setLayout('diariodecuba.ejs');
+        $response->setTemplate("search.ejs", ["articles" => $articles, "caption" => $query], [Utils::getPathToService("diariodecuba")."/images/diariodecuba-logo.png"]);
+    }
 
-	/**
-	 * Call to show the news
-	 *
-	 * @param Request
-	 * @param Response
-	 */
-	public function _historia(Request $request, Response $response)
-	{
-		// get link to the article
-		$link = $request->input->data->query;
-		$cleanLink = preg_replace('/[^A-Za-z0-9]/', '', $link);
+    /**
+     * Call to show the news
+     *
+     * @param Request
+     * @param Response
+     */
+    public function _historia(Request $request, Response $response)
+    {
+        // get link to the article
+        $link = $request->input->data->query;
+        $cleanLink = preg_replace('/[^A-Za-z0-9]/', '', $link);
 
-		// try to load story from the cache
-		$notice = false;
-		$cacheFile = Utils::getTempDir() . md5($cleanLink) . '_ddc_story_'.md5_file(__FILE__).'.tmp';
-		if(file_exists($cacheFile)) $notice = @unserialize(file_get_contents($cacheFile));
+        // try to load story from the cache
+        $notice = false;
+        $cacheFile = Utils::getTempDir() . md5($cleanLink) . '_ddc_story_'.md5_file(__FILE__).'.tmp';
+        if (file_exists($cacheFile)) {
+            $notice = @unserialize(file_get_contents($cacheFile));
+        }
 
-		// if no cache, get from DDC
-		if(!is_array($notice)){
-			// create a new client
-			$client = new Client();
-			$guzzle = $client->getClient();
-			$client->setClient($guzzle);
+        // if no cache, get from DDC
+        if (!is_array($notice)) {
+            // create a new client
+            $client = new Client();
+            $guzzle = $client->getClient();
+            $client->setClient($guzzle);
 
-			Core::log("GET history $link", "ddc");
+            Core::log("GET history $link", "ddc");
 
-			// create a crawler
-			$crawler = $client->request('GET', $link /*"http://www.diariodecuba.com/$link"*/);
+            // create a crawler
+            $crawler = $client->request('GET', $link /*"http://www.diariodecuba.com/$link"*/);
 
-			// search for title
-			$title = $crawler->filter('h1.article-title')->text();
+            // search for title
+            $title = $crawler->filter('h1.article-title');
 
-			// get the intro
-			$titleObj = $crawler->filter('div.content:nth-child(1) p:nth-child(1)');
-			$intro = $titleObj->count() > 0 ? $titleObj->text() : "";
+	        if ($title->count() < 1)
+		        $title = $crawler->filter('h1.title');
 
-			// get the images
-			$imageObj = $crawler->filter('figure.field-field-image .leading_image img');
-			$imgUrl = "";
-			$imgAlt = "";
-			$img = "";
-			if($imageObj->count() != 0) {
-				$imgUrl = trim($imageObj->attr("src"));
-				$imgAlt = trim($imageObj->attr("alt"));
+	        $title = $title->text();
 
-				// get the image
-				if( ! empty($imgUrl)) {
-					$imgName = Utils::generateRandomHash() . "." . pathinfo($imgUrl, PATHINFO_EXTENSION);
-					$img = \Phalcon\DI\FactoryDefault::getDefault()->get('path')['root'] . "/temp/$imgName";
-					file_put_contents($img, file_get_contents($imgUrl));
-				}
-			}
+            // get the intro
+            $titleObj = $crawler->filter('div.content:nth-child(1) p:nth-child(1)');
+            $intro = $titleObj->count() > 0 ? $titleObj->text() : "";
 
-			// get the array of paragraphs of the body
-			$paragraphs = $crawler->filter('article.node div.content p');
-			$content = [];
-			foreach($paragraphs as $p) {
-				$content[] = trim($p->textContent);
-			}
+            // get the images
+            $imageObj = $crawler->filter('figure.field-field-image .leading_image img');
+            $imgUrl = "";
+            $imgAlt = "";
+            $img = "";
+            if ($imageObj->count() != 0) {
+                $imgUrl = trim($imageObj->attr("src"));
+                $imgAlt = trim($imageObj->attr("alt"));
 
-			// create a json object to send to the template
-			$notice = [
-				"title" => $title,
-				"intro" => $intro,
-				"img" => $img,
-				"imgAlt" => $imgAlt,
-				"content" => $content
-			];
+                // get the image
+                if (! empty($imgUrl)) {
+                    $imgName = Utils::generateRandomHash() . "." . pathinfo($imgUrl, PATHINFO_EXTENSION);
+                    $img = \Phalcon\DI\FactoryDefault::getDefault()->get('path')['root'] . "/temp/$imgName";
+                    file_put_contents($img, file_get_contents($imgUrl));
+                }
+            }
 
-			// save cache
-			file_put_contents($cacheFile, serialize($notice));
-		}
+            // get the array of paragraphs of the body
+            $paragraphs = $crawler->filter('article.node div.content p');
 
-		// get the image if exist
-		$images = empty($notice['img']) ? [] : [$notice['img']];
-		$notice['img'] = basename($notice['img']);
+            if ($paragraphs->count() < 1)
+	            $paragraphs = $crawler->filter('article.node-wrapper div.content p');
 
-		$images[] = Utils::getPathToService("ddc")."/images/diariodecuba-logo.png";
+            $content = [];
+            foreach ($paragraphs as $p) {
+                $content[] = trim($p->textContent);
+            }
 
-		// send info to the view
-		$response->setCache();
-		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("story.ejs", $notice, $images);
-	}
+            // create a json object to send to the template
+            $notice = [
+                "title" => $title,
+                "intro" => $intro,
+                "img" => $img,
+                "imgAlt" => $imgAlt,
+                "content" => $content
+            ];
 
-	/**
-	 * Call list by categoria
-	 *
-	 * @author salvipascual
-	 * @param Request
-	 * @param Response
-	 */
-	public function _categoria(Request $request, Response &$response)
-	{
-		// get the current category
-		$category = $request->input->data->query;
-		$caption = $request->input->data->caption;
+            // save cache
+            file_put_contents($cacheFile, serialize($notice));
+        }
 
-		// load from cache file if exists
-		$articles = false;
-		$fullPath = Utils::getTempDir() . date("Ymd") . md5($category) . '_ddc_category.tmp';
-		if(file_exists($fullPath)) $articles = @unserialize(file_get_contents($fullPath));
+        // get the image if exist
+        $images = empty($notice['img']) ? [] : [$notice['img']];
+        $notice['img'] = basename($notice['img']);
 
-		// if cache do not exist, load from DDC
-		if(!is_array($articles)) {
-			// Setup crawler
-			$client = new Client();
-			$crawler = $client->request('GET', "http://www.diariodecuba.com/etiquetas/$category.html");
+        $images[] = Utils::getPathToService("ddc")."/images/diariodecuba-logo.png";
 
-			// Collect articles by category
-			$articles = [];
-			$crawler->filter('.views-row')->each(function($item, $i) use (&$articles){
-				try {
-					$link = $item->filter('.views-field-title span > a')->attr("href");
-					$title = str_replace("'", "", $item->filter('.views-field-title span > a')->text());
-					$description = $item->filter('.views-field-field-summary-value p')->text();
-					$description = php::truncate($description, 160);
-				} catch(Exception $e) {
-					return;
-				}
+        // send info to the view
+        $response->setCache();
+        $response->setLayout('diariodecuba.ejs');
+        $response->setTemplate("story.ejs", $notice, $images);
+    }
 
-				// add to the list of articles
-				$articles[] = [
-					"title" => $title,
-					"link" => $link,
-					"description" => $description
-				];
-			});
+    /**
+     * Call list by categoria
+     *
+     * @author salvipascual
+     * @param Request
+     * @param Response
+     */
+    public function _categoria(Request $request, Response &$response)
+    {
+        // get the current category
+        $category = $request->input->data->query;
+        $caption = $request->input->data->caption;
 
-			// save to cache
-			setlocale(LC_ALL, 'es_ES.UTF-8');
-			file_put_contents($fullPath, serialize($articles));
-		}
+        // load from cache file if exists
+        $articles = false;
+        $fullPath = Utils::getTempDir() . date("Ymd") . md5($category) . '_ddc_category.tmp';
+        if (file_exists($fullPath)) {
+            $articles = @unserialize(file_get_contents($fullPath));
+        }
 
-		// in case no results were found
-		if(empty($articles)) {
-			return $this->error($response, "No hay resultados", "Es extraño, pero no hemos encontrado resultados para esta categoría. Estamos revisando a ver que ocurre.");
-		}
+        // if cache do not exist, load from DDC
+        if (!is_array($articles)) {
+            // Setup crawler
+            $client = new Client();
+            $crawler = $client->request('GET', "http://www.diariodecuba.com/etiquetas/$category.html");
 
-		// send data to the view
-		$response->setCache(240);
-		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("search.ejs", ["articles"=>$articles, "caption"=>$caption], [Utils::getPathToService("ddc")."/images/diariodecuba-logo.png"]);
-	}
+            // Collect articles by category
+            $articles = [];
+            $crawler->filter('.views-row')->each(function ($item, $i) use (&$articles) {
+                try {
+                    $link = $item->filter('.views-field-title span > a')->attr("href");
+                    $title = str_replace("'", "", $item->filter('.views-field-title span > a')->text());
+                    $description = $item->filter('.views-field-field-summary-value p')->text();
+                    $description = php::truncate($description, 160);
+                } catch (Exception $e) {
+                    return;
+                }
 
-	/**
-	 * Return an error message
-	 *
-	 * @author salvipascual
-	 * @param Response $response
-	 * @param String $title 
-	 * @param String $desc 
-	 * @return Response
-	 */
-	private function error(Response $response, $title, $desc)
-	{
-		// display show error in the log
-		error_log("[DIARIODECUBA] $title | $desc");
+                // add to the list of articles
+                $articles[] = [
+                    "title" => $title,
+                    "link" => $link,
+                    "description" => $description
+                ];
+            });
 
-		// return error template
-		$response->setLayout('diariodecuba.ejs');
-		return $response->setTemplate('message.ejs', ["header" => $title, "text" => $desc]);
-	}
+            // save to cache
+            setlocale(LC_ALL, 'es_ES.UTF-8');
+            file_put_contents($fullPath, serialize($articles));
+        }
+
+        // in case no results were found
+        if (empty($articles)) {
+            return $this->error($response, "No hay resultados", "Es extraño, pero no hemos encontrado resultados para esta categoría. Estamos revisando a ver que ocurre.");
+        }
+
+        // send data to the view
+        $response->setCache(240);
+        $response->setLayout('diariodecuba.ejs');
+        $response->setTemplate("search.ejs", ["articles"=>$articles, "caption"=>$caption], [Utils::getPathToService("ddc")."/images/diariodecuba-logo.png"]);
+    }
+
+    /**
+     * Return an error message
+     *
+     * @author salvipascual
+     * @param Response $response
+     * @param String $title
+     * @param String $desc
+     * @return Response
+     */
+    private function error(Response $response, $title, $desc)
+    {
+        // display show error in the log
+        error_log("[DIARIODECUBA] $title | $desc");
+
+        // return error template
+        $response->setLayout('diariodecuba.ejs');
+        return $response->setTemplate('message.ejs', ["header" => $title, "text" => $desc]);
+    }
 }
