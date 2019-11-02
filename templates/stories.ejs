@@ -1,57 +1,41 @@
-<div class="row">
-	<div class="col s12">
-		<ul class="collection">
-			<% for(var i=0; i<articles.length; i++) { %>
-				<li class="collection-item">
-					<a href="#!" onclick="apretaste.send({
-							command: 'DDC HISTORIA',
-							data:{
-								query: articles[<%= i %>].link,
-							    title: articles[<%= i %>].title
-							}
-					})">
-						<h6><%= articles[i].title %></h6>
-					</a>
+<div class="input-field col s12">
+    <select id="categories">
+        <option value="" <%= selectedCategory == "" ? "selected" : "" %>>Todo</option>
+        <% categories.forEach(function (category) { %>
+            <option value="<%= category.id %>" <%= selectedCategory == category.id ? "selected" : "" %>><%= category.name %></option>
+        <% }) %>
+    </select>
+</div>
 
-					<% if(articles[i].description.length != 0){ %>
-						<p><%= articles[i].description %></p>
-					<%}%>
+<div class="col s12">
+    <% articles.forEach(function (article) { %>
+        <div class="card horizontal" onclick="apretaste.send({'command': 'DDC HISTORIA', 'data':{'id': '<%= article.id %>'}})">
+            <div class="card-image">
+                <%
+                    var src = "{{APP_IMAGE_PATH}}/" + article.image;
+                    if (article.image == "no-image.png") src = "{{APP_SERVICE_PATH}}/images/no-image.png"
+                %>
 
-					<small>
-						<%= articles[i].pubDate %>
-						<% if(articles[i].author!=""){ %>
-							&bull; <i><%= articles[i].author %></i>
-						<% } %>
-
-						<br>
-
-						<% for(var j=0; j<articles[i].category.length; j++) { %>
-							<div class="chip small">
-								<a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'DDC CATEGORIA','data':{'query': '<%= articles[i].category[j].link %>', 'caption':'<%= articles[i].category[j].caption %>'}})"><%= articles[i].category[j].caption %></a>
-							</div>
-						<% } %>
-					</small>
-				</li>
-			<% } %>
-		</ul>
-	</div>
-
-	<div class="fixed-action-btn">
-		<a href="#searchModal" class="btn-floating btn-large waves-effect waves-light modal-trigger">
-			<i class="large material-icons">search</i>
-		</a>
-	</div>
-
-	<div id="searchModal" class="modal bottom-sheet">
-		<div class="modal-content">
-			<div class="input-field">
-				<textarea id="query" class="materialize-textarea"></textarea>
-				<label for="note">Buscar</label>
-			</div>
-		</div>
-		<div class="modal-footer">
-			<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-			<a href="#!" onclick="sendSearch()" class="modal-close waves-effect waves-green btn-flat">Buscar</a>
-		</div>
-	</div>
+                <img src="<%= src %>">
+            </div>
+            <div class="card-stacked">
+                <div class="card-content">
+                    <span><%= article.title %></span><br>
+                    <small>
+                        <i class="material-icons tiny">calendar_today</i> <%= article.pubDate %> &nbsp;
+                        <i class="material-icons tiny">person</i> <%= article.author %> &nbsp;
+                        <i class="material-icons tiny">comment</i> <%= article.comments %>
+                    </small><br>
+                    <small><%= article.description %></small><br>
+                    <span>
+                        <% article.tags.forEach(function (tag) { %>
+                        <% if(tag.length < 10){ %>
+                            <div class="chip small"><%= tag %></div> <!-- onclick="apretaste.send({'command':'DDC TAG', 'data': {'tag': '<%= tag %>'}})" -->
+                        <% } %>
+                        <% }) %>
+                    </span>
+                </div>
+            </div>
+        </div>
+    <% }) %>
 </div>

@@ -1,12 +1,14 @@
 <!-- HEADER -->
-<div class="row">
-    <div class="col s12 flow-text relative">
-        <a href="#home" onclick="apretaste.send({'command':'DDC'})">
-            <img id="logo" class="responsive-img" src="{{APP_SERVICE_PATH}}/images/diariodecuba-logo.png">
-        </a>
-        <i class="hide-on-share"><small class="grey-text" id="categoria-servicio">Informativo</small></i>
-        <div class="divider hide-on-share"></div>
-    </div>
+<div class="navbar-fixed">
+    <nav>
+        <div class="nav-wrapper white">
+            <a href="#" onclick="apretaste.send({'command':'DDC'})" class="brand-logo center">
+                <img id="logo" class="responsive-img" src="{{APP_SERVICE_PATH}}/images/diariodecuba-logo.png">
+            </a>
+        </div>
+    </nav>
 </div>
 
-{{APP_TEMPLATE_CODE}}
+<div class="row">
+    {{APP_TEMPLATE_CODE}}
+</div>
