@@ -57,7 +57,7 @@ class Service
 		$article->comments = q("SELECT A.*, B.username FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id ASC");
 		$article->myUsername = $request->person->username;
 
-		foreach ($article->comments as $comment) $comment->inserted = date('d/m/Y h:i a', strtotime($comment->inserted));
+		foreach ($article->comments as $comment) $comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
 
 		// get the image if exist
 		$images = empty($article->image) ? [] : [Core::getTempDir() . "/{$article->image}"];
@@ -73,32 +73,62 @@ class Service
 	}
 
 	/**
+	 * Watch the last comments in articles or with no article
+	 *
+	 * @param Request $request
+	 * @param Response $response
+	 */
+
+	public function _comentarios(Request $request, Response $response)
+	{
+		$comments = q("SELECT A.*, B.username, C.title, C.pubDate, C.author FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id LEFT JOIN ddc_articles C ON C.id = A.id_article ORDER BY A.id ASC LIMIT 20");
+
+		foreach ($comments as $comment) {
+			$comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
+			$comment->pubDate = date('j F, Y', strtotime($comment->pubDate));
+		}
+
+		$images = [Utils::getPathToService("ddc") . "/images/diariodecuba-logo.png"];
+
+		// send info to the view
+		$response->setCache('30');
+		$response->setLayout('diariodecuba.ejs');
+		$response->setTemplate("comments.ejs", ["comments" => $comments, "myUsername" => $request->person->username], $images);
+	}
+
+	/**
 	 * Comment an article
 	 *
 	 * @param Request $request
 	 * @param Response $response
 	 *
+	 * @throws Exception
 	 * @author ricardo
 	 *
 	 */
 	public function _comentar(Request $request, Response $response)
 	{
-		$comment = $request->input->data->comment;
+		$comment = $request->input->data->comment;;
 		$articleId = $request->input->data->article;
 
-		// check the note ID is valid
-		$article = q("SELECT COUNT(*) AS total FROM ddc_articles WHERE id='$articleId'");
-		if ($article[0]->total == "0") return;
+		if($articleId){
+			// check the note ID is valid
+			$article = q("SELECT COUNT(*) AS total FROM ddc_articles WHERE id='$articleId'");
+			if ($article[0]->total == "0") return;
 
-		// save the comment
-		$comment = e($comment, 255);
-		q("
+			// save the comment
+			$comment = e($comment, 255);
+			q("
 			INSERT INTO ddc_comments (id_person, id_article, content) VALUES ('{$request->person->id}', '$articleId', '$comment');
 			UPDATE ddc_articles SET comments = comments+1 WHERE id='$articleId';
 		");
 
-		// add the experience
-		Level::setExperience('NEWS_COMMENT_FIRST_DAILY', $request->person->id);
+			// add the experience
+			Level::setExperience('NEWS_COMMENT_FIRST_DAILY', $request->person->id);
+		}
+		else{
+			q("INSERT INTO ddc_comments (id_person, content) VALUES ('{$request->person->id}', '$comment')");
+		}
 	}
 
 	/**

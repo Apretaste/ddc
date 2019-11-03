@@ -28,7 +28,7 @@ function toggleWriteModal() {
 
 	if (status == "closed") {
 		if ($('.container:not(#writeModal) > .navbar-fixed').length == 1) {
-			var h = $('.container:not(#writeModal) > .navbar-fixed')[0].clientHeight + 2;
+			var h = $('.container:not(#writeModal) > .navbar-fixed')[0].clientHeight + 1;
 			$('#writeModal').css('height', 'calc(100% - ' + h + 'px)');
 		}
 
@@ -56,6 +56,8 @@ function getRandomColor() {
 
 function sendComment() {
 	var comment = $('#comment').val().trim();
+
+	if(typeof id == "undefined") var id = null;
 
 	if (comment.length >= 2) {
 		apretaste.send({

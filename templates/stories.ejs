@@ -7,7 +7,7 @@
     </select>
 </div>
 
-<div class="col s12">
+<div class="col s12" id="articles">
     <% articles.forEach(function (article) { %>
         <div class="card horizontal" onclick="apretaste.send({'command': 'DDC HISTORIA', 'data':{'id': '<%= article.id %>'}})">
             <div class="card-image">
@@ -38,4 +38,10 @@
             </div>
         </div>
     <% }) %>
+</div>
+
+<div class="fixed-action-btn hide-on-unique">
+    <a class="btn-floating btn-large grey darken-2" onclick="apretaste.send({'command': 'DDC COMENTARIOS'})">
+        <i class="large material-icons">comment</i>
+    </a>
 </div>

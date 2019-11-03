@@ -2,7 +2,7 @@
 	padding: 8px;
 }
 
-.card:not(:first-child){
+#articles .card:not(:first-child){
 	margin: 2rem 0;
 }
 
@@ -82,9 +82,14 @@
 	color: white;
 }
 
+#comments{
+	border: 1px solid white;
+}
 
-/**/
-
+#comments li{
+	min-height: auto;
+	border: none;
+}
 
 #article > * {
 	padding-left: 0px !important;
