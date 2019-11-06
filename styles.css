@@ -11,17 +11,22 @@
 }
 
 .chip.small {
-	height: 20px;
-	line-height: 18px;
-	border: 1px solid gray;
+	height: 18px;
+	line-height: 14px;
+	border: 1px solid #899094;
+	color: #303d44;
+	text-transform: uppercase;
 	background: transparent;
-	padding: 1px 8px;
-	cursor: pointer;
-	font-size: 11px;
+	padding: 2px 10px;
+	font-size: 8px;
 }
 
 .card.horizontal .card-image {
-	max-width: 30%;
+	width: 30%;
+	top: 5px;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: auto 100%;
 }
 
 .select-wrapper{
@@ -106,4 +111,19 @@
 
 .row {
 	margin-bottom: 0px;
+}
+
+.grey-ddc{
+	color: #666666;
+}
+
+.material-icons.ultra-tiny{
+	position: relative;
+	top: 1px;
+	font-size: 10px;
+}
+
+.material-icons.tiny{
+	position: relative;
+	top: 2px;
 }

@@ -9,39 +9,34 @@
 
 <div class="col s12" id="articles">
     <% articles.forEach(function (article) { %>
-        <div class="card horizontal" onclick="apretaste.send({'command': 'DDC HISTORIA', 'data':{'id': '<%= article.id %>'}})">
-            <div class="card-image">
-                <%
-                    var src = "{{APP_IMAGE_PATH}}/" + article.image;
-                    if (article.image == "no-image.png") src = "{{APP_SERVICE_PATH}}/images/no-image.png"
-                %>
+        <div class="card horizontal"
+             onclick="apretaste.send({'command': 'DDC HISTORIA', 'data':{'id': '<%= article.id %>'}})">
+            <%
+                var src = "{{APP_IMAGE_PATH}}/" + article.image;
+                if (article.image == "no-image.png") src = "{{APP_SERVICE_PATH}}/images/no-image.png"
+            %>
+            <div class="card-image" style="background-image: url('<%=src %>')">
 
-                <img src="<%= src %>">
             </div>
             <div class="card-stacked">
-                <div class="card-content">
-                    <span><%= article.title %></span><br>
-                    <small>
-                        <i class="material-icons tiny">calendar_today</i> <%= article.pubDate %> &nbsp;
-                        <i class="material-icons tiny">person</i> <%= article.author %> &nbsp;
-                        <i class="material-icons tiny">comment</i> <%= article.comments %>
+                <div class="card-content" style="line-height: 1.2rem">
+                    <span style="color: #303d44"><%= article.title %></span><br>
+                    <small class="grey-ddc" style="display: inline-block; margin: 3px 0">
+                        <i class="material-icons ultra-tiny">calendar_today</i> <%= article.pubDate %> &nbsp;
+                        <i class="material-icons ultra-tiny">person</i> <%= article.author %> &nbsp;
+                        <i class="material-icons ultra-tiny">comment</i> <%= article.comments %>
                     </small><br>
-                    <small><%= article.description %></small><br>
-                    <span>
+                    <small style="color: #7b7b7b"><%= article.description %></small><br>
+                    <span style="display: block; margin-top: 5px">
                         <% article.tags.forEach(function (tag) { %>
-                        <% if(tag.length < 10){ %>
-                            <div class="chip small"><%= tag %></div> <!-- onclick="apretaste.send({'command':'DDC TAG', 'data': {'tag': '<%= tag %>'}})" -->
-                        <% } %>
+                            <% if(tag.length < 10){ %>
+                                <div class="chip small"><%= tag %></div>
+                                <!-- onclick="apretaste.send({'command':'DDC TAG', 'data': {'tag': '<%= tag %>'}})" -->
+                            <% } %>
                         <% }) %>
                     </span>
                 </div>
             </div>
         </div>
     <% }) %>
-</div>
-
-<div class="fixed-action-btn hide-on-unique">
-    <a class="btn-floating btn-large grey darken-2" onclick="apretaste.send({'command': 'DDC COMENTARIOS'})">
-        <i class="large material-icons">comment</i>
-    </a>
 </div>

@@ -35,7 +35,7 @@ function toggleWriteModal() {
 		$('#writeModal').slideToggle({
 			direction: "up"
 		}).attr('status', 'opened');
-		$('#note').focus();
+		$('#comment').focus();
 	} else {
 		$('#writeModal').slideToggle({
 			direction: "up"
@@ -57,14 +57,12 @@ function getRandomColor() {
 function sendComment() {
 	var comment = $('#comment').val().trim();
 
-	if(typeof id == "undefined") var id = null;
-
 	if (comment.length >= 2) {
 		apretaste.send({
 			'command': 'DDC COMENTAR',
 			'data': {
 				'comment': comment,
-				'article': id
+				'article': typeof id != "undefined" ? id : null
 			},
 			'redirect': false,
 			'callback': {
@@ -82,7 +80,7 @@ function sendComment() {
 function sendCommentCallback(comment) {
 	var element = "<li class=\"collection-item avatar\" id=\"last\">" +
 		"<span style=\"background-color: " + getRandomColor() + "\" class=\"circle\">" + myUsername[0].toUpperCase() + "</span>" +
-		"<span class=\"title\">@" + myUsername + " &middot; " + Date.prototype.nowFormated() + " </span>" +
+		"<span class=\"title\" style=\"color: #303d44; font-weight: 500\">@" + myUsername + " &middot; <small class=\"grey-ddc\"><b>" + Date.prototype.nowFormated() + "</b></small></span>" +
 		"<p>" + comment + "</p>" +
 		"</li>";
 
@@ -91,6 +89,10 @@ function sendCommentCallback(comment) {
 	$('html, body').animate({
 		scrollTop: $("#last").offset().top
 	}, 1000);
+
+	var commentsCounter = $('#commentsCounter');
+
+	commentsCounter.html(parseInt(commentsCounter.html())+1);
 
 	toggleWriteModal();
 }

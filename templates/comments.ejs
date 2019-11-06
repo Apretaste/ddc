@@ -4,16 +4,16 @@
             <li class="collection-item avatar">
                 <span style="background-color: <%= getRandomColor() %>"
                       class="circle"> <%= comment.username[0].toUpperCase() %> </span>
-                <span class="title" style="color: #303d44; font-weight: 500">@<%= comment.username %> &middot; <small
-                            class="grey-text text-darken-2"><b><%= comment.inserted %></b></small></span>
+                <span class="title" style="color: #263238; font-weight: 500">@<%= comment.username %> &middot; <small
+                            class="grey-ddc"> <span style="color: #424242"><%= comment.inserted %></span> </small></span>
                 <p><%= comment.content %></p>
 
                 <% if(comment.id_article) {%>
-                    <div class="card grey-text text-darken-2" onclick="apretaste.send({'command': 'DDC HISTORIA', 'data':{'id': '<%= comment.id_article %>'}})">
+                    <div class="card grey-ddc" onclick="apretaste.send({'command': 'DDC HISTORIA', 'data':{'id': '<%= comment.id_article %>'}})">
                         <span style="color: #303d44;"><%= comment.title %></span><br>
-                        <small>
-                            <i class="material-icons tiny">calendar_today</i> <%= comment.pubDate %> &nbsp;
-                            <i class="material-icons tiny">person</i> <%= comment.author %>
+                        <small class="grey-ddc">
+                            <i class="material-icons ultra-tiny">calendar_today</i> <%= comment.pubDate %> &nbsp;
+                            <i class="material-icons ultra-tiny">person</i> <%= comment.author %>
                         </small>
                     </div>
                 <%}%>

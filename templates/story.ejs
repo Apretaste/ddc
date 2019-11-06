@@ -1,7 +1,7 @@
 <div class="col s12" id="article">
     <h3 style="color: #303d44"><%= title %></h3>
 
-    <span class="grey-text text-darken-2" style="font-weight: 500">
+    <span class="grey-ddc" style="font-weight: 500">
             <i class="material-icons tiny">calendar_today</i> <%= pubDate %> &nbsp;
             <i class="material-icons tiny">person</i> <%= author %>
         </span>
@@ -12,7 +12,7 @@
         <div class="center-align">
             <img class="responsive-img" width="100%" src="{{APP_IMAGE_PATH}}<%= image %>"><br>
         </div>
-        <span class="grey-text text-darken-1"> <%= imageCaption %> </span>
+        <span class="grey-ddc"> <%= imageCaption %> </span>
     <% } %>
 
     <section>
@@ -35,16 +35,18 @@
 
 <div class="col s12">
     <div class="divider" style="margin-bottom: 5px"></div>
-    <span class="grey-text text-darken-2 left" style="font-weight: 500">Comentarios</span>
-    <span class="right grey-text text-darken-2"><i
-                class="material-icons tiny ">comment</i> <%= comments.length %></span>
+    <span class="grey-ddc left" style="font-weight: 500">Comentarios</span>
+    <span class="right grey-ddc"><i
+                class="material-icons tiny ">comment</i> <span id="commentsCounter"><%= comments.length %></span></span>
 </div>
 
 <ul class="collection" id="comments">
     <% comments.forEach(function (comment) { %>
         <li class="collection-item avatar">
-            <span style="background-color: <%= getRandomColor() %>" class="circle"> <%= comment.username[0].toUpperCase() %> </span>
-            <span class="title" style="color: #303d44; font-weight: 500">@<%= comment.username %> &middot; <small class="grey-text text-darken-2"><b><%= comment.inserted %></b></small></span>
+            <span style="background-color: <%= getRandomColor() %>"
+                  class="circle"> <%= comment.username[0].toUpperCase() %> </span>
+            <span class="title" style="color: #263238; font-weight: 500">@<%= comment.username %> &middot; <small
+                        class="grey-ddc"><span style="color: #424242"><%= comment.inserted %></span></small></span>
             <p><%= comment.content %></p>
         </li>
     <% }) %>

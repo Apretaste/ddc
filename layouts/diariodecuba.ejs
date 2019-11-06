@@ -2,9 +2,13 @@
 <div class="navbar-fixed hide-on-unique">
     <nav class="container">
         <div class="nav-wrapper white">
-            <a href="#" onclick="apretaste.send({'command':'DDC'})" class="brand-logo center">
+            <a href="#" onclick="apretaste.send({'command':'DDC'})" class="brand-logo left">
                 <img id="logo" class="responsive-img" src="{{APP_SERVICE_PATH}}/images/diariodecuba-logo.png">
             </a>
+            <ul class="right">
+                <li><a onclick="apretaste.send({'command': 'DDC'})"><i class="material-icons grey-ddc">home</i></a></li>
+                <li><a onclick="apretaste.send({'command': 'DDC COMENTARIOS'})"><i class="material-icons grey-ddc">comment</i></a></li>
+            </ul>
         </div>
     </nav>
 </div>
