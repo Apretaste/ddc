@@ -6,6 +6,7 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class Service
 {
+
 	/**
 	 * Get the list of news
 	 *
@@ -25,7 +26,7 @@ class Service
 		$images = ["$serviceImgPath/diariodecuba-logo.png", "$serviceImgPath/no-image.png"];
 
 		foreach ($articles as $article) {
-			$article->pubDate = date('j F, Y', strtotime($article->pubDate));
+			$article->pubDate = self::toEspMonth(date('j F, Y', strtotime($article->pubDate)));
 			$article->tags = explode(',', $article->tags);
 			if (!$inCuba) $images[] = Core::getTempDir() . "/{$article->image}";
 			else $article->image = "no-image.png";
@@ -52,9 +53,9 @@ class Service
 		$id = $request->input->data->id;
 		$article = q("SELECT * FROM ddc_articles WHERE id='$id'")[0];
 
-		$article->pubDate = date('j F, Y', strtotime($article->pubDate));
+		$article->pubDate = self::toEspMonth((date('j F, Y', strtotime($article->pubDate))));
 		$article->tags = explode(',', $article->tags);
-		$article->comments = q("SELECT A.*, B.username FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id ASC");
+		$article->comments = q("SELECT A.*, B.username FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id DESC");
 		$article->myUsername = $request->person->username;
 
 		foreach ($article->comments as $comment) $comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
@@ -81,17 +82,16 @@ class Service
 
 	public function _comentarios(Request $request, Response $response)
 	{
-		$comments = q("SELECT A.*, B.username, C.title, C.pubDate, C.author FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id LEFT JOIN ddc_articles C ON C.id = A.id_article ORDER BY A.id ASC LIMIT 20");
+		$comments = q("SELECT A.*, B.username, C.title, C.pubDate, C.author FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id LEFT JOIN ddc_articles C ON C.id = A.id_article ORDER BY A.id DESC LIMIT 20");
 
 		foreach ($comments as $comment) {
 			$comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
-			$comment->pubDate = date('j F, Y', strtotime($comment->pubDate));
+			$comment->pubDate = self::toEspMonth(date('j F, Y', strtotime($comment->pubDate)));
 		}
 
 		$images = [Utils::getPathToService("ddc") . "/images/diariodecuba-logo.png"];
 
 		// send info to the view
-		$response->setCache('30');
 		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("comments.ejs", ["comments" => $comments, "myUsername" => $request->person->username], $images);
 	}
@@ -108,10 +108,12 @@ class Service
 	 */
 	public function _comentar(Request $request, Response $response)
 	{
+		if ($request->person->email === 'guest') return;
+
 		$comment = $request->input->data->comment;;
 		$articleId = $request->input->data->article;
 
-		if($articleId){
+		if ($articleId) {
 			// check the note ID is valid
 			$article = q("SELECT COUNT(*) AS total FROM ddc_articles WHERE id='$articleId'");
 			if ($article[0]->total == "0") return;
@@ -125,8 +127,7 @@ class Service
 
 			// add the experience
 			Level::setExperience('NEWS_COMMENT_FIRST_DAILY', $request->person->id);
-		}
-		else{
+		} else {
 			q("INSERT INTO ddc_comments (id_person, content) VALUES ('{$request->person->id}', '$comment')");
 		}
 	}
@@ -148,5 +149,13 @@ class Service
 		// return error template
 		$response->setLayout('diariodecuba.ejs');
 		return $response->setTemplate('message.ejs', ["header" => $title, "text" => $desc]);
+	}
+
+	private static function toEspMonth(String $date)
+	{
+		$months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+		$espMonths = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+		return str_replace($months, $espMonths, $date);
 	}
 }

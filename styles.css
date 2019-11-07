@@ -23,7 +23,6 @@
 
 .card.horizontal .card-image {
 	width: 30%;
-	top: 5px;
 	background-repeat: no-repeat;
 	background-position: center;
 	background-size: auto 100%;
@@ -126,4 +125,10 @@
 .material-icons.tiny{
 	position: relative;
 	top: 2px;
+}
+
+.article-title{
+	color: #303d44;
+	font-size: 16px;
+	font-weight: 500;
 }

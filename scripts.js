@@ -84,10 +84,12 @@ function sendCommentCallback(comment) {
 		"<p>" + comment + "</p>" +
 		"</li>";
 
-	$('#comments').append(element);
+	$('#no-comments').remove();
+
+	$('#comments').prepend(element);
 	$('#comment').val('');
 	$('html, body').animate({
-		scrollTop: $("#last").offset().top
+		scrollTop: $("#last").offset().top - 64
 	}, 1000);
 
 	var commentsCounter = $('#commentsCounter');
