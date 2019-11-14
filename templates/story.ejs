@@ -39,9 +39,13 @@
     <span class="right grey-ddc">
         <i class="material-icons tiny">comment</i> <span id="commentsCounter"><%= comments.length %></span>
         <i class="material-icons tiny"
-           onclick="apretaste.send({'command': 'DDC HISTORIA', 'data':{'id': '<%= id %>'}})">autorenew</i>
+           onclick="apretaste.send({'command': 'DDC HISTORIA', 'data':{'id': '<%= id %>', 'ts': Date.now()}})">autorenew</i>
     </span>
 </div>
+
+<% if (myUsername == "guest"){ %>
+    <div class="col s12 red-text" style="font-weight: 500">Inicie sesión para comentar</div>
+<% } %>
 
 <ul class="collection" id="comments">
     <% comments.forEach(function (comment) { %>

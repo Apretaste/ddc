@@ -1,3 +1,7 @@
+<% if (myUsername == "guest"){ %>
+    <div class="col s12 red-text center-align" style="margin-top: 1rem; font-weight: 500">Inicie sesión para comentar</div>
+<% } %>
+
 <div class="col s12">
     <ul class="collection" id="comments">
         <% comments.forEach(function (comment) { %>
