@@ -24,11 +24,12 @@ class Service
 		$inCuba = $request->input->inCuba ?? false;
 		$serviceImgPath = Utils::getPathToService("ddc") . "/images";
 		$images = ["$serviceImgPath/diariodecuba-logo.png", "$serviceImgPath/no-image.png"];
+		$ddcImgDir = Core::getRoot() . "/shared/img/content/ddc";
 
 		foreach ($articles as $article) {
 			$article->pubDate = self::toEspMonth(date('j F, Y', strtotime($article->pubDate)));
 			$article->tags = explode(',', $article->tags);
-			if (!$inCuba) $images[] = Core::getTempDir() . "/{$article->image}";
+			if (!$inCuba) $images[] = "$ddcImgDir/{$article->image}";
 			else $article->image = "no-image.png";
 		}
 
@@ -61,7 +62,8 @@ class Service
 		foreach ($article->comments as $comment) $comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
 
 		// get the image if exist
-		$images = empty($article->image) ? [] : [Core::getTempDir() . "/{$article->image}"];
+		$ddcImgDir = Core::getRoot() . "/shared/img/content/ddc";
+		$images = empty($article->image) ? [] : ["$ddcImgDir/{$article->image}"];
 
 		$images[] = Utils::getPathToService("ddc") . "/images/diariodecuba-logo.png";
 
