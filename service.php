@@ -51,7 +51,10 @@ class Service
 	public function _historia(Request $request, Response $response)
 	{
 		// get link to the article
-		$id = $request->input->data->id;
+		$id = $request->input->data->id ?? false;
+		$images[] = Utils::getPathToService("ddc") . "/images/diariodecuba-logo.png";
+
+		if($id){
 		$article = q("SELECT * FROM ddc_articles WHERE id='$id'")[0];
 
 		$article->pubDate = self::toEspMonth((date('j F, Y', strtotime($article->pubDate))));
@@ -63,9 +66,7 @@ class Service
 
 		// get the image if exist
 		$ddcImgDir = Core::getRoot() . "/shared/img/content/ddc";
-		$images = empty($article->image) ? [] : ["$ddcImgDir/{$article->image}"];
-
-		$images[] = Utils::getPathToService("ddc") . "/images/diariodecuba-logo.png";
+		if(!empty($article->image)) $images[] = "$ddcImgDir/{$article->image}";
 
 		// send info to the view
 		$response->setCache('30');
@@ -73,6 +74,9 @@ class Service
 		$response->setTemplate("story.ejs", $article, $images);
 
 		Challenges::complete("read-ddc", $request->person->id);
+		} else{
+			return $this->error($response, "Articulo no encontrado", "No sabemos que articulo estas buscando");
+		}
 	}
 
 	/**
@@ -148,9 +152,12 @@ class Service
 		// display show error in the log
 		error_log("[DIARIODECUBA] $title | $desc");
 
+		// send the logo
+		$images[] = Utils::getPathToService("ddc") . "/images/diariodecuba-logo.png";
+
 		// return error template
 		$response->setLayout('diariodecuba.ejs');
-		return $response->setTemplate('message.ejs', ["header" => $title, "text" => $desc]);
+		return $response->setTemplate('message.ejs', ["header" => $title, "text" => $desc], $images);
 	}
 
 	private static function toEspMonth(String $date)
