@@ -55,7 +55,7 @@ class Service
 
 		$article->pubDate = self::toEspMonth((date('j F, Y', strtotime($article->pubDate))));
 		$article->tags = explode(',', $article->tags);
-		$article->comments = q("SELECT A.*, B.username FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id DESC");
+		$article->comments = Connection::query("SELECT A.*, B.username FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id DESC", true, 'utf8mb4');
 		$article->myUsername = $request->person->username;
 
 		foreach ($article->comments as $comment) $comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
@@ -82,7 +82,7 @@ class Service
 
 	public function _comentarios(Request $request, Response $response)
 	{
-		$comments = q("SELECT A.*, B.username, C.title, C.pubDate, C.author FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id LEFT JOIN ddc_articles C ON C.id = A.id_article ORDER BY A.id DESC LIMIT 20");
+		$comments = Connection::query("SELECT A.*, B.username, C.title, C.pubDate, C.author FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id LEFT JOIN ddc_articles C ON C.id = A.id_article ORDER BY A.id DESC LIMIT 20", true, 'utf8mb4');
 
 		foreach ($comments as $comment) {
 			$comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
@@ -120,15 +120,15 @@ class Service
 
 			// save the comment
 			$comment = e($comment, 255);
-			q("
+			Connection::query("
 			INSERT INTO ddc_comments (id_person, id_article, content) VALUES ('{$request->person->id}', '$articleId', '$comment');
 			UPDATE ddc_articles SET comments = comments+1 WHERE id='$articleId';
-		");
+		", true, 'utf8mb4');
 
 			// add the experience
 			Level::setExperience('NEWS_COMMENT_FIRST_DAILY', $request->person->id);
 		} else {
-			q("INSERT INTO ddc_comments (id_person, content) VALUES ('{$request->person->id}', '$comment')");
+			Connection::query("INSERT INTO ddc_comments (id_person, content) VALUES ('{$request->person->id}', '$comment')", true, 'utf8mb4');
 		}
 	}
 
