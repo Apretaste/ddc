@@ -29,8 +29,11 @@ class Service
 		foreach ($articles as $article) {
 			$article->pubDate = self::toEspMonth(date('j F, Y', strtotime($article->pubDate)));
 			$article->tags = explode(',', $article->tags);
-			if (!$inCuba) $images[] = "$ddcImgDir/{$article->image}";
-			else $article->image = "no-image.png";
+			if (!$inCuba) {
+				$imgPath = "$ddcImgDir/{$article->image}";
+				if (!file_exists($imgPath)) file_put_contents($imgPath, file_get_contents($article->imageLink));
+				$images[] = $imgPath;
+			} else $article->image = "no-image.png";
 		}
 
 		$content = ["articles" => $articles, "selectedCategory" => $selectedCategory];
@@ -39,6 +42,14 @@ class Service
 		$response->setCache(60);
 		$response->setLayout('diariodecuba.ejs');
 		$response->setTemplate("stories.ejs", $content, $images);
+	}
+
+	private static function toEspMonth(String $date)
+	{
+		$months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+		$espMonths = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+		return str_replace($months, $espMonths, $date);
 	}
 
 	/**
@@ -54,29 +65,51 @@ class Service
 		$id = $request->input->data->id ?? false;
 		$images[] = Utils::getPathToService("ddc") . "/images/diariodecuba-logo.png";
 
-		if($id){
-		$article = q("SELECT * FROM ddc_articles WHERE id='$id'")[0];
+		if ($id) {
+			$article = q("SELECT * FROM ddc_articles WHERE id='$id'")[0];
 
-		$article->pubDate = self::toEspMonth((date('j F, Y', strtotime($article->pubDate))));
-		$article->tags = explode(',', $article->tags);
-		$article->comments = Connection::query("SELECT A.*, B.username FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id DESC", true, 'utf8mb4');
-		$article->myUsername = $request->person->username;
+			$article->pubDate = self::toEspMonth((date('j F, Y', strtotime($article->pubDate))));
+			$article->tags = explode(',', $article->tags);
+			$article->comments = Connection::query("SELECT A.*, B.username FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id DESC", true, 'utf8mb4');
+			$article->myUsername = $request->person->username;
 
-		foreach ($article->comments as $comment) $comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
+			foreach ($article->comments as $comment) $comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
 
-		// get the image if exist
-		$ddcImgDir = Core::getRoot() . "/shared/img/content/ddc";
-		if(!empty($article->image)) $images[] = "$ddcImgDir/{$article->image}";
+			// get the image if exist
+			$ddcImgDir = Core::getRoot() . "/shared/img/content/ddc";
+			if (!empty($article->image)) $images[] = "$ddcImgDir/{$article->image}";
 
-		// send info to the view
-		$response->setCache('30');
-		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("story.ejs", $article, $images);
+			// send info to the view
+			$response->setCache('30');
+			$response->setLayout('diariodecuba.ejs');
+			$response->setTemplate("story.ejs", $article, $images);
 
-		Challenges::complete("read-ddc", $request->person->id);
-		} else{
+			Challenges::complete("read-ddc", $request->person->id);
+		} else {
 			return $this->error($response, "Articulo no encontrado", "No sabemos que articulo estas buscando");
 		}
+	}
+
+	/**
+	 * Return an error message
+	 *
+	 * @param Response $response
+	 * @param String $title
+	 * @param String $desc
+	 * @return Response
+	 * @author salvipascual
+	 */
+	private function error(Response $response, $title, $desc)
+	{
+		// display show error in the log
+		error_log("[DIARIODECUBA] $title | $desc");
+
+		// send the logo
+		$images[] = Utils::getPathToService("ddc") . "/images/diariodecuba-logo.png";
+
+		// return error template
+		$response->setLayout('diariodecuba.ejs');
+		return $response->setTemplate('message.ejs', ["header" => $title, "text" => $desc], $images);
 	}
 
 	/**
@@ -136,35 +169,5 @@ class Service
 		} else {
 			Connection::query("INSERT INTO ddc_comments (id_person, content) VALUES ('{$request->person->id}', '$comment')", true, 'utf8mb4');
 		}
-	}
-
-	/**
-	 * Return an error message
-	 *
-	 * @param Response $response
-	 * @param String $title
-	 * @param String $desc
-	 * @return Response
-	 * @author salvipascual
-	 */
-	private function error(Response $response, $title, $desc)
-	{
-		// display show error in the log
-		error_log("[DIARIODECUBA] $title | $desc");
-
-		// send the logo
-		$images[] = Utils::getPathToService("ddc") . "/images/diariodecuba-logo.png";
-
-		// return error template
-		$response->setLayout('diariodecuba.ejs');
-		return $response->setTemplate('message.ejs', ["header" => $title, "text" => $desc], $images);
-	}
-
-	private static function toEspMonth(String $date)
-	{
-		$months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-		$espMonths = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
-		return str_replace($months, $espMonths, $date);
 	}
 }
