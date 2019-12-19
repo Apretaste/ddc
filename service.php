@@ -19,7 +19,7 @@ class Service
 	{
 		$selectedCategory = $request->input->data->category ?? false;
 		$categoryWhere = $selectedCategory ? "WHERE A.category_id = $selectedCategory" : "";
-		$articles = q("SELECT A.id, A.title, A.pubDate, A.author, A.image, A.description, A.comments, B.name AS category, A.tags FROM ddc_articles A LEFT JOIN ddc_categories B ON A.category_id = B.id $categoryWhere ORDER BY pubDate DESC LIMIT 20");
+		$articles = q("SELECT A.id, A.title, A.pubDate, A.author, A.image, A.imageLink, A.description, A.comments, B.name AS category, A.tags FROM ddc_articles A LEFT JOIN ddc_categories B ON A.category_id = B.id $categoryWhere ORDER BY pubDate DESC LIMIT 20");
 
 		$inCuba = $request->input->inCuba ?? false;
 		$serviceImgPath = Utils::getPathToService("ddc") . "/images";
