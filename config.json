@@ -1,8 +1,9 @@
 {
-	"name": "ddc",
-	"version": "9",
-	"description": "Muestra los titulares del Diario de Cuba y permite leer las noticias más recientes",
-	"category": "informativo",
-	"creator": "pdiaz@diariodecuba.com",
-	"listed": true
+  "name": "ddc",
+  "caption": "DDC",
+  "description": "Muestra los titulares del Diario de Cuba y permite leer las noticias más recientes",
+  "category": "informativo",
+  "creator": "ricardo@apretaste.org",
+  "listed": true,
+  "guest": true
 }
