@@ -165,7 +165,7 @@ class Service
 			if ($article[0]->total == "0") return;
 
 			// save the comment
-			$comment = e($comment, 255);
+			$comment = Database::escape($comment, 255);
 			Database::query("
 			INSERT INTO ddc_comments (id_person, id_article, content) VALUES ('{$request->person->id}', '$articleId', '$comment');
 			UPDATE ddc_articles SET comments = comments+1 WHERE id='$articleId';
