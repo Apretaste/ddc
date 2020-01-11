@@ -1,8 +1,12 @@
 <?php
 
+use Apretaste\Challenges;
 use Apretaste\Core;
-use Goutte\Client;
-use Symfony\Component\DomCrawler\Crawler;
+use Apretaste\Level;
+use Apretaste\Request;
+use Apretaste\Response;
+use Framework\Alert;
+use Framework\Database;
 
 class Service
 {
@@ -10,21 +14,21 @@ class Service
 	/**
 	 * Get the list of news
 	 *
-	 * @param Request
-	 * @param Response
-	 * @throws FeedException
+	 * @param Request $request
+	 * @param Response $response
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _main(Request $request, Response &$response)
 	{
 		$selectedCategory = $request->input->data->category ?? false;
 		$categoryWhere = $selectedCategory ? "WHERE A.category_id = $selectedCategory" : "";
-		$articles = q("SELECT A.id, A.title, A.pubDate, A.author, A.image, A.imageLink, A.description, A.comments, B.name AS category, A.tags FROM ddc_articles A LEFT JOIN ddc_categories B ON A.category_id = B.id $categoryWhere ORDER BY pubDate DESC LIMIT 20");
+		$articles = Database::query("SELECT A.id, A.title, A.pubDate, A.author, A.image, A.imageLink, A.description, A.comments, B.name AS category, A.tags FROM ddc_articles A LEFT JOIN ddc_categories B ON A.category_id = B.id $categoryWhere ORDER BY pubDate DESC LIMIT 20");
 
 		$inCuba = $request->input->inCuba ?? false;
-		$serviceImgPath = Utils::getPathToService("ddc") . "/images";
+		$serviceImgPath = SERVICE_PATH . "ddc/images";
 		$images = ["$serviceImgPath/diariodecuba-logo.png", "$serviceImgPath/no-image.png"];
-		$ddcImgDir = Core::getRoot() . "/shared/img/content/ddc";
+		$ddcImgDir = IMG_PATH . "/ddc";
 
 		foreach ($articles as $article) {
 			$article->pubDate = self::toEspMonth(date('j F, Y', strtotime($article->pubDate)));
@@ -57,26 +61,27 @@ class Service
 	 *
 	 * @param Request
 	 * @param Response
+	 * @return Response
 	 * @throws Exception
 	 */
 	public function _historia(Request $request, Response $response)
 	{
 		// get link to the article
 		$id = $request->input->data->id ?? false;
-		$images[] = Utils::getPathToService("ddc") . "/images/diariodecuba-logo.png";
+		$images[] = SERVICE_PATH . "ddc/images/diariodecuba-logo.png";
 
 		if ($id) {
-			$article = q("SELECT * FROM ddc_articles WHERE id='$id'")[0];
+			$article = Database::query("SELECT * FROM ddc_articles WHERE id='$id'")[0];
 
 			$article->pubDate = self::toEspMonth((date('j F, Y', strtotime($article->pubDate))));
 			$article->tags = explode(',', $article->tags);
-			$article->comments = Connection::query("SELECT A.*, B.username FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id DESC", true, 'utf8mb4');
+			$article->comments = Database::query("SELECT A.*, B.username FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id DESC");
 			$article->myUsername = $request->person->username;
 
 			foreach ($article->comments as $comment) $comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
 
 			// get the image if exist
-			$ddcImgDir = Core::getRoot() . "/shared/img/content/ddc";
+			$ddcImgDir = IMG_PATH . "/ddc";
 			if (!empty($article->image)) $images[] = "$ddcImgDir/{$article->image}";
 
 			// send info to the view
@@ -97,6 +102,7 @@ class Service
 	 * @param String $title
 	 * @param String $desc
 	 * @return Response
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	private function error(Response $response, $title, $desc)
@@ -105,7 +111,7 @@ class Service
 		error_log("[DIARIODECUBA] $title | $desc");
 
 		// send the logo
-		$images[] = Utils::getPathToService("ddc") . "/images/diariodecuba-logo.png";
+		$images[] = SERVICE_PATH . "ddc/images/diariodecuba-logo.png";
 
 		// return error template
 		$response->setLayout('diariodecuba.ejs');
@@ -117,18 +123,19 @@ class Service
 	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @throws Alert
 	 */
 
 	public function _comentarios(Request $request, Response $response)
 	{
-		$comments = Connection::query("SELECT A.*, B.username, C.title, C.pubDate, C.author FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id LEFT JOIN ddc_articles C ON C.id = A.id_article ORDER BY A.id DESC LIMIT 20", true, 'utf8mb4');
+		$comments = Database::query("SELECT A.*, B.username, C.title, C.pubDate, C.author FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id LEFT JOIN ddc_articles C ON C.id = A.id_article ORDER BY A.id DESC LIMIT 20");
 
 		foreach ($comments as $comment) {
 			$comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
 			$comment->pubDate = self::toEspMonth(date('j F, Y', strtotime($comment->pubDate)));
 		}
 
-		$images = [Utils::getPathToService("ddc") . "/images/diariodecuba-logo.png"];
+		$images = [SERVICE_PATH . "ddc/images/diariodecuba-logo.png"];
 
 		// send info to the view
 		$response->setLayout('diariodecuba.ejs');
@@ -154,20 +161,20 @@ class Service
 
 		if ($articleId) {
 			// check the note ID is valid
-			$article = q("SELECT COUNT(*) AS total FROM ddc_articles WHERE id='$articleId'");
+			$article = Database::query("SELECT COUNT(*) AS total FROM ddc_articles WHERE id='$articleId'");
 			if ($article[0]->total == "0") return;
 
 			// save the comment
 			$comment = e($comment, 255);
-			Connection::query("
+			Database::query("
 			INSERT INTO ddc_comments (id_person, id_article, content) VALUES ('{$request->person->id}', '$articleId', '$comment');
 			UPDATE ddc_articles SET comments = comments+1 WHERE id='$articleId';
-		", true, 'utf8mb4');
+		");
 
 			// add the experience
 			Level::setExperience('NEWS_COMMENT_FIRST_DAILY', $request->person->id);
 		} else {
-			Connection::query("INSERT INTO ddc_comments (id_person, content) VALUES ('{$request->person->id}', '$comment')", true, 'utf8mb4');
+			Database::query("INSERT INTO ddc_comments (id_person, content) VALUES ('{$request->person->id}', '$comment')");
 		}
 	}
 }
