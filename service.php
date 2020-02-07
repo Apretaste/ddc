@@ -29,6 +29,9 @@ class Service
 		foreach ($articles as $article) {
 			$article->pubDate = self::toEspMonth(date('j F, Y', strtotime($article->pubDate)));
 			$article->tags = explode(',', $article->tags);
+			$article->title = quoted_printable_decode($article->title);
+			$article->description = quoted_printable_decode($article->description);
+
 			if (!$inCuba) {
 				$imgPath = "$ddcImgDir/{$article->image}";
 				if (!file_exists($imgPath)) file_put_contents($imgPath, file_get_contents($article->imageLink));
@@ -57,6 +60,7 @@ class Service
 	 *
 	 * @param Request
 	 * @param Response
+	 * @return Response
 	 * @throws Exception
 	 */
 	public function _historia(Request $request, Response $response)
@@ -70,6 +74,10 @@ class Service
 
 			$article->pubDate = self::toEspMonth((date('j F, Y', strtotime($article->pubDate))));
 			$article->tags = explode(',', $article->tags);
+			$article->title = quoted_printable_decode($article->title);
+			$article->content = quoted_printable_decode($article->content);
+			$article->description = quoted_printable_decode($article->description);
+			$article->imageCaption = quoted_printable_decode($article->imageCaption);
 			$article->comments = Connection::query("SELECT A.*, B.username FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id DESC", true, 'utf8mb4');
 			$article->myUsername = $request->person->username;
 
