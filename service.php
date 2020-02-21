@@ -28,7 +28,7 @@ class Service
 		$inCuba = $request->input->inCuba ?? false;
 		$serviceImgPath = SERVICE_PATH . "ddc/images";
 		$images = ["$serviceImgPath/diariodecuba-logo.png", "$serviceImgPath/no-image.png"];
-		$ddcImgDir = IMG_PATH . "/ddc";
+		$ddcImgDir = TEMP_PATH . "/cache";
 
 		foreach ($articles as $article) {
 			$article->pubDate = self::toEspMonth(date('j F, Y', strtotime($article->pubDate)));
