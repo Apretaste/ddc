@@ -86,7 +86,7 @@ class Service
 			foreach ($article->comments as $comment) $comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
 
 			// get the image if exist
-			$ddcImgDir = IMG_PATH . "/ddc";
+			$ddcImgDir = TEMP_PATH . "/cache";
 			if (!empty($article->image)) $images[] = "$ddcImgDir/{$article->image}";
 
 			// send info to the view
