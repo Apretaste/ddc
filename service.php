@@ -23,7 +23,7 @@ class Service
 	{
 		$selectedCategory = $request->input->data->category ?? false;
 		$categoryWhere = $selectedCategory ? "WHERE A.category_id = $selectedCategory" : "";
-		$articles = Database::query("SELECT A.id, A.title, A.pubDate, A.author, A.image, A.imageLink, A.description, A.comments, B.name AS category, A.tags FROM ddc_articles A LEFT JOIN ddc_categories B ON A.category_id = B.id $categoryWhere ORDER BY pubDate DESC LIMIT 20");
+		$articles = Database::query("SELECT A.id, A.title, A.pubDate, A.author, A.image, A.imageLink, A.description, A.comments, B.name AS category, A.tags FROM _ddc_articles A LEFT JOIN _ddc_categories B ON A.category_id = B.id $categoryWhere ORDER BY pubDate DESC LIMIT 20");
 
 		$inCuba = $request->input->inCuba ?? false;
 		$serviceImgPath = SERVICE_PATH . "ddc/images";
@@ -73,14 +73,14 @@ class Service
 		$images[] = SERVICE_PATH . "ddc/images/diariodecuba-logo.png";
 
 		if ($id) {
-			$article = Database::query("SELECT * FROM ddc_articles WHERE id='$id'")[0];
+			$article = Database::query("SELECT * FROM _ddc_articles WHERE id='$id'")[0];
 
 			$article->pubDate = self::toEspMonth((date('j F, Y', strtotime($article->pubDate))));
 			$article->tags = explode(',', $article->tags);
 			$article->description = quoted_printable_decode($article->description);
 			$article->content = quoted_printable_decode($article->content);
 			$article->imageCaption = quoted_printable_decode($article->imageCaption);
-			$article->comments = Database::query("SELECT A.*, B.username FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id DESC");
+			$article->comments = Database::query("SELECT A.*, B.username FROM _ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id DESC");
 			$article->myUsername = $request->person->username;
 
 			foreach ($article->comments as $comment) $comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
@@ -133,7 +133,7 @@ class Service
 
 	public function _comentarios(Request $request, Response $response)
 	{
-		$comments = Database::query("SELECT A.*, B.username, C.title, C.pubDate, C.author FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id LEFT JOIN ddc_articles C ON C.id = A.id_article ORDER BY A.id DESC LIMIT 20");
+		$comments = Database::query("SELECT A.*, B.username, C.title, C.pubDate, C.author FROM _ddc_comments A LEFT JOIN person B ON A.id_person = B.id LEFT JOIN _ddc_articles C ON C.id = A.id_article ORDER BY A.id DESC LIMIT 20");
 
 		foreach ($comments as $comment) {
 			$comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
@@ -166,20 +166,20 @@ class Service
 
 		if ($articleId) {
 			// check the note ID is valid
-			$article = Database::query("SELECT COUNT(*) AS total FROM ddc_articles WHERE id='$articleId'");
+			$article = Database::query("SELECT COUNT(*) AS total FROM _ddc_articles WHERE id='$articleId'");
 			if ($article[0]->total == "0") return;
 
 			// save the comment
 			$comment = Database::escape($comment, 255);
 			Database::query("
-			INSERT INTO ddc_comments (id_person, id_article, content) VALUES ('{$request->person->id}', '$articleId', '$comment');
-			UPDATE ddc_articles SET comments = comments+1 WHERE id='$articleId';
+			INSERT INTO _ddc_comments (id_person, id_article, content) VALUES ('{$request->person->id}', '$articleId', '$comment');
+			UPDATE _ddc_articles SET comments = comments+1 WHERE id='$articleId';
 		");
 
 			// add the experience
 			Level::setExperience('NEWS_COMMENT_FIRST_DAILY', $request->person->id);
 		} else {
-			Database::query("INSERT INTO ddc_comments (id_person, content) VALUES ('{$request->person->id}', '$comment')");
+			Database::query("INSERT INTO _ddc_comments (id_person, content) VALUES ('{$request->person->id}', '$comment')");
 		}
 	}
 }
