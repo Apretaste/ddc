@@ -34,8 +34,18 @@ class Service
 
 			if (!$inCuba) {
 				$imgPath = "$ddcImgDir/{$article->image}";
-				if (!file_exists($imgPath)) file_put_contents($imgPath, file_get_contents($article->imageLink));
-				$images[] = $imgPath;
+				if (!file_exists($imgPath)) {
+					$image = Utils::file_get_contents_curl($article->imageLink, [], $info);
+					if ($info['http_code'] ?? 404 === 200)
+						if (!empty($image))
+							file_put_contents($imgPath, $image);
+				} else {
+					$image = file_get_contents($imgPath);
+				}
+
+				if (!empty($image))
+					$images[] = $imgPath;
+
 			} else $article->image = "no-image.png";
 		}
 
