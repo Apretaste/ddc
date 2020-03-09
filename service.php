@@ -1,7 +1,6 @@
 <?php
 
 use Apretaste\Challenges;
-use Apretaste\Core;
 use Apretaste\Level;
 use Apretaste\Request;
 use Apretaste\Response;
@@ -28,16 +27,20 @@ class Service
 		$inCuba = $request->input->inCuba ?? false;
 		$serviceImgPath = SERVICE_PATH . "ddc/images";
 		$images = ["$serviceImgPath/diariodecuba-logo.png", "$serviceImgPath/no-image.png"];
-		$ddcImgDir = IMG_PATH . "/ddc";
+		$ddcImgDir = SHARED_PUBLIC_PATH . "ddc";
 
 		foreach ($articles as $article) {
 			$article->pubDate = self::toEspMonth(date('j F, Y', strtotime($article->pubDate)));
 			$article->tags = explode(',', $article->tags);
 			if (!$inCuba) {
 				$imgPath = "$ddcImgDir/{$article->image}";
-				if (!file_exists($imgPath)) file_put_contents($imgPath, file_get_contents($article->imageLink));
+				if (!file_exists($imgPath)) {
+					file_put_contents($imgPath, file_get_contents($article->imageLink));
+				}
 				$images[] = $imgPath;
-			} else $article->image = "no-image.png";
+			} else {
+				$article->image = "no-image.png";
+			}
 		}
 
 		$content = ["articles" => $articles, "selectedCategory" => $selectedCategory];
@@ -78,11 +81,15 @@ class Service
 			$article->comments = Database::query("SELECT A.*, B.username FROM ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id DESC");
 			$article->myUsername = $request->person->username;
 
-			foreach ($article->comments as $comment) $comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
+			foreach ($article->comments as $comment) {
+				$comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
+			}
 
 			// get the image if exist
-			$ddcImgDir = IMG_PATH . "/ddc";
-			if (!empty($article->image)) $images[] = "$ddcImgDir/{$article->image}";
+			$ddcImgDir = SHARED_PUBLIC_PATH . "ddc";
+			if (!empty($article->image)) {
+				$images[] = "$ddcImgDir/{$article->image}";
+			}
 
 			// send info to the view
 			$response->setCache('30');
@@ -154,15 +161,20 @@ class Service
 	 */
 	public function _comentar(Request $request, Response $response)
 	{
-		if ($request->person->email === 'guest') return;
+		if ($request->person->email === 'guest') {
+			return;
+		}
 
-		$comment = $request->input->data->comment;;
+		$comment = $request->input->data->comment;
+		;
 		$articleId = $request->input->data->article;
 
 		if ($articleId) {
 			// check the note ID is valid
 			$article = Database::query("SELECT COUNT(*) AS total FROM ddc_articles WHERE id='$articleId'");
-			if ($article[0]->total == "0") return;
+			if ($article[0]->total == "0") {
+				return;
+			}
 
 			// save the comment
 			$comment = Database::escape($comment, 255);
