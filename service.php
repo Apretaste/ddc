@@ -24,7 +24,7 @@ class Service
 		$inCuba = $request->input->inCuba ?? false;
 		$serviceImgPath = Utils::getPathToService("ddc") . "/images";
 		$images = ["$serviceImgPath/diariodecuba-logo.png", "$serviceImgPath/no-image.png"];
-		$ddcImgDir = Core::getRoot() . "/shared/public/content/ddc";
+		$ddcImgDir ="/var/www/shared/public/content/ddc";
 
 		foreach ($articles as $article) {
 			$article->pubDate = self::toEspMonth(date('j F, Y', strtotime($article->pubDate)));
@@ -94,7 +94,7 @@ class Service
 			foreach ($article->comments as $comment) $comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
 
 			// get the image if exist
-			$ddcImgDir = Core::getRoot() . "/shared/public/content/ddc";
+			$ddcImgDir = "/var/www/shared/public/content/ddc";
 			if (!empty($article->image)) $images[] = "$ddcImgDir/{$article->image}";
 
 			// send info to the view
