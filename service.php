@@ -24,7 +24,7 @@ class Service
 		$inCuba = $request->input->inCuba ?? false;
 		$serviceImgPath = Utils::getPathToService("ddc") . "/images";
 		$images = ["$serviceImgPath/diariodecuba-logo.png", "$serviceImgPath/no-image.png"];
-		$ddcImgDir ="/var/www/shared/public/content/ddc";
+		$ddcImgDir = Core::getTempDir()."/";
 
 		foreach ($articles as $article) {
 			$article->pubDate = self::toEspMonth(date('j F, Y', strtotime($article->pubDate)));
@@ -33,7 +33,7 @@ class Service
 			$article->description = quoted_printable_decode($article->description);
 
 			if (!$inCuba) {
-				$imgPath = "$ddcImgDir/{$article->image}";
+				$imgPath = "$ddcImgDir/".md5($article->imageLink);
 				if (!file_exists($imgPath)) {
 					$image = Utils::file_get_contents_curl($article->imageLink, [], $info);
 					if ($info['http_code'] ?? 404 === 200)
