@@ -5,6 +5,7 @@ use Apretaste\Level;
 use Apretaste\Request;
 use Apretaste\Response;
 use Framework\Alert;
+use Framework\Crawler;
 use Framework\Database;
 
 class Service
@@ -35,11 +36,23 @@ class Service
 			$article->description = quoted_printable_decode($article->description);
 
 			if (!$inCuba) {
+
 				$imgPath = "$ddcImgDir/{$article->image}";
+
 				if (!file_exists($imgPath)) {
-					file_put_contents($imgPath, file_get_contents($article->imageLink));
+
+					$image = Crawler::get($article->imageLink, 'GET', null, [], [], $info);
+
+					if ($info['http_code'] ?? 404 === 200)
+						if (!empty($image))
+							file_put_contents($imgPath, $image);
+				} else {
+					$image = file_get_contents($imgPath);
 				}
-				$images[] = $imgPath;
+
+				if (!empty($image))
+					$images[] = $imgPath;
+
 			} else {
 				$article->image = "no-image.png";
 			}
