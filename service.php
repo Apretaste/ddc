@@ -23,7 +23,7 @@ class Service
 	{
 		$selectedCategory = $request->input->data->category ?? false;
 		$categoryWhere = $selectedCategory ? "WHERE A.category_id = $selectedCategory" : "";
-		$articles = Database::query("SELECT A.id, A.title, A.pubDate, A.author, A.image, A.imageLink, A.description, A.comments, B.name AS category, A.tags FROM _ddc_articles A LEFT JOIN _ddc_categories B ON A.category_id = B.id $categoryWhere ORDER BY pubDate DESC LIMIT 20");
+		$articles = Database::query("SELECT A.id, A.title, A.pubDate, A.author, A.location as artLocation, A.image, A.imageLink, A.description, A.comments, B.name AS category, A.tags FROM _ddc_articles A LEFT JOIN _ddc_categories B ON A.category_id = B.id $categoryWhere ORDER BY pubDate DESC LIMIT 20");
 
 		$inCuba = $request->input->inCuba ?? false;
 		$ddcApp = $request->input->appName == "ddc" && $request->input->environment == "app";
@@ -99,6 +99,10 @@ class Service
 			$article->imageCaption = quoted_printable_decode($article->imageCaption);
 			$article->comments = Database::query("SELECT A.*, B.username FROM _ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id DESC");
 			$article->myUsername = $request->person->username;
+
+			// any global var in js named location changes the location of the url
+			$article->artLocation = $article->location;
+			unset($article->location);
 
 			foreach ($article->comments as $comment) {
 				$comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
