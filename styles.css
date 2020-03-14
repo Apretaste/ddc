@@ -142,11 +142,15 @@
 	max-height: 220px;
 }
 
-.article > h4 {
+.article > h4, .article > h3 {
 	color: #303030;
 	font-weight: bold;
 }
 
 .article > p {
 	font-size: 18px;
+}
+
+p {
+	margin: .75rem 0;
 }
