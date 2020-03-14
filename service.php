@@ -26,6 +26,7 @@ class Service
 		$articles = Database::query("SELECT A.id, A.title, A.pubDate, A.author, A.image, A.imageLink, A.description, A.comments, B.name AS category, A.tags FROM _ddc_articles A LEFT JOIN _ddc_categories B ON A.category_id = B.id $categoryWhere ORDER BY pubDate DESC LIMIT 20");
 
 		$inCuba = $request->input->inCuba ?? false;
+		$ddcApp = $request->input->appName == "ddc" && $request->input->environment == "app";
 		$serviceImgPath = SERVICE_PATH . "ddc/images";
 		$images = ["$serviceImgPath/diariodecuba-logo.png", "$serviceImgPath/no-image.png"];
 		$ddcImgDir = TEMP_PATH . "/cache";
@@ -35,12 +36,10 @@ class Service
 			$article->tags = explode(',', $article->tags);
 			$article->description = quoted_printable_decode($article->description);
 
-			if (!$inCuba) {
-
+			if (!$inCuba || $ddcApp) {
 				$imgPath = "$ddcImgDir/{$article->image}";
 
 				if (!file_exists($imgPath)) {
-
 					$image = Crawler::get($article->imageLink, 'GET', null, [], [], $info);
 
 					if ($info['http_code'] ?? 404 === 200)
@@ -50,9 +49,7 @@ class Service
 					$image = file_get_contents($imgPath);
 				}
 
-				if (!empty($image))
-					$images[] = $imgPath;
-
+				if (!empty($image)) $images[] = $imgPath;
 			} else {
 				$article->image = "no-image.png";
 			}
@@ -60,10 +57,12 @@ class Service
 
 		$content = ["articles" => $articles, "selectedCategory" => $selectedCategory];
 
+		$template = !$ddcApp ? "stories.ejs" : "stories-ap.ejs";
+
 		// send data to the view
 		$response->setCache(60);
 		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("stories.ejs", $content, $images);
+		$response->setTemplate($template, $content, $images);
 	}
 
 	private static function toEspMonth(String $date)
@@ -88,6 +87,8 @@ class Service
 		$id = $request->input->data->id ?? false;
 		$images[] = SERVICE_PATH . "ddc/images/diariodecuba-logo.png";
 
+		$ddcApp = $request->input->appName == "ddc" && $request->input->environment == "app";
+
 		if ($id) {
 			$article = Database::query("SELECT * FROM _ddc_articles WHERE id='$id'")[0];
 
@@ -107,10 +108,12 @@ class Service
 			$ddcImgDir = TEMP_PATH . "/cache";
 			if (!empty($article->image)) $images[] = "$ddcImgDir/{$article->image}";
 
+			$template = !$ddcApp ? "story.ejs" : "story-ap.ejs";
+
 			// send info to the view
 			$response->setCache('30');
 			$response->setLayout('diariodecuba.ejs');
-			$response->setTemplate("story.ejs", $article, $images);
+			$response->setTemplate($template, $article, $images);
 
 			Challenges::complete("read-ddc", $request->person->id);
 		} else {
