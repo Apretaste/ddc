@@ -1,9 +1,11 @@
 <div class="col s12 article">
-    <h5><%= title %></h5>
+    <h4><%= title %></h4>
     <p class="article-info"><%= author %> | <%= artLocation %></p>
     <p class="article-description"><%= description %></p>
-    <img src="<%= src %>" alt="articleImg" class="responsive-img">
-    <span class="grey-ddc"> <%= imageCaption %> </span>
+    <% if(image != ""){ %>
+        <img src="{{APP_IMAGE_PATH}}<%= image %>" alt="articleImg" class="responsive-img">
+        <figcaption><%= imageCaption %></figcaption>
+    <% } %>
 
     <section>
         <% content.split("\\n\\n").forEach(function(paragraph){ %>
