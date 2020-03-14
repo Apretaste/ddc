@@ -1,7 +1,7 @@
 <div class="col s12 article">
     <h3><%= title %></h3>
-    <p class="article-info grey-ddc"><%= author %> | <%= artLocation %></p>
-    <span><%= description %></span>
+    <span class="grey-ddc"><%= author %> | <%= artLocation %></span>
+    <p><%= description %></p>
     <% if(image != ""){ %>
         <div class="center-align">
             <img src="{{APP_IMAGE_PATH}}<%= image %>" alt="articleImg" class="responsive-img">
