@@ -1,6 +1,6 @@
 <div class="col s12 article">
-    <h4><%= title %></h4>
-    <p class="article-info"><%= author %> | <%= artLocation %></p>
+    <h3><%= title %></h3>
+    <p class="article-info grey-ddc"><%= author %> | <%= artLocation %></p>
     <p class="article-description"><%= description %></p>
     <% if(image != ""){ %>
         <div class="center-align">
@@ -9,7 +9,7 @@
         </div>
     <% } %>
 
-    <section>
+    <section class="grey-ddc" style="font-size: 16px">
         <% content.split("\\n\\n").forEach(function(paragraph){ %>
             <p><%= paragraph %></p>
         <% }) %>
