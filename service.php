@@ -57,7 +57,7 @@ class Service
 
 		$content = ["articles" => $articles, "selectedCategory" => $selectedCategory];
 
-		$template = !$ddcApp ? "stories.ejs" : "stories-ap.ejs";
+		$template = $ddcApp ? "stories.ejs" : "stories-ap.ejs";
 
 		// send data to the view
 		$response->setCache(60);
@@ -112,7 +112,7 @@ class Service
 			$ddcImgDir = TEMP_PATH . "/cache";
 			if (!empty($article->image)) $images[] = "$ddcImgDir/{$article->image}";
 
-			$template = !$ddcApp ? "story.ejs" : "story-ap.ejs";
+			$template = $ddcApp ? "story.ejs" : "story-ap.ejs";
 
 			// send info to the view
 			$response->setCache('30');
