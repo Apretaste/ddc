@@ -3,8 +3,10 @@
     <p class="article-info"><%= author %> | <%= artLocation %></p>
     <p class="article-description"><%= description %></p>
     <% if(image != ""){ %>
-        <img src="{{APP_IMAGE_PATH}}<%= image %>" alt="articleImg" class="responsive-img">
-        <figcaption><%= imageCaption %></figcaption>
+        <div class="center-align">
+            <img src="{{APP_IMAGE_PATH}}<%= image %>" alt="articleImg" class="responsive-img">
+            <figcaption><%= imageCaption %></figcaption>
+        </div>
     <% } %>
 
     <section>

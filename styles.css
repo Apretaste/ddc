@@ -138,6 +138,10 @@
 	font-family: "PlayfairDisplay-Bold", "Times New Roman", Times, Georgia, "DejaVu Serif", serif;
 }
 
+.article img{
+	max-height: 220px;
+}
+
 .article > h4 {
 	color: #303030;
 	font-weight: bold;
