@@ -32,6 +32,7 @@ class Service
 		$ddcImgDir = TEMP_PATH . "/cache";
 
 		foreach ($articles as $article) {
+            $article->title = quoted_printable_decode($article->title);
 			$article->pubDate = self::toEspMonth(date('j F, Y', strtotime($article->pubDate)));
 			$article->tags = explode(',', $article->tags);
 			$article->description = quoted_printable_decode($article->description);
@@ -92,6 +93,7 @@ class Service
 		if ($id) {
 			$article = Database::query("SELECT * FROM _ddc_articles WHERE id='$id'")[0];
 
+            $article->title = quoted_printable_decode($article->title);
 			$article->pubDate = self::toEspMonth((date('j F, Y', strtotime($article->pubDate))));
 			$article->tags = explode(',', $article->tags);
 			$article->description = quoted_printable_decode($article->description);
