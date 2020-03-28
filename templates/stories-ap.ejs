@@ -15,7 +15,7 @@
                 var src = "{{APP_IMAGE_PATH}}/" + article.image;
                 if (article.image == "no-image.png") src = "{{APP_SERVICE_PATH}}/images/no-image.png"
             %>
-            <div class="card-image" style="background-image: url('<%=src %>')">
+            <div class="card-image delete-if-no-image" style="background-image: url('<%=src %>')">
 
             </div>
             <div class="card-stacked">
