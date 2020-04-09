@@ -193,7 +193,7 @@ class Service
 
 		// get comment data
 		$comment = $request->input->data->comment;
-		$articleId = $request->input->data->article;
+		$articleId = $request->input->data->article ?? false;
 
 		if ($articleId) {
 			// check the note ID is valid
