@@ -88,7 +88,7 @@ class Service
 		$id = $request->input->data->id ?? false;
 		$images[] = SERVICE_PATH . "ddc/images/diariodecuba-logo.png";
 
-		$ddcApp = $request->input->appName == "ddc" && $request->input->environment == "app";
+		$ddcApp = $request->input->appName == "ddc" && ($request->input->environment == "app" || $request->input->environment == "email");
 
 		if ($id) {
 			$article = Database::query("SELECT * FROM _ddc_articles WHERE id='$id'")[0];
