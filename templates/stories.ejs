@@ -1,42 +1,17 @@
-<div class="input-field col s12">
-    <select id="categories">
-        <option value="" <%= selectedCategory == "" ? "selected" : "" %>>Todo</option>
-        <% categories.forEach(function (category) { %>
-            <option value="<%= category.id %>" <%= selectedCategory == category.id ? "selected" : "" %>><%= category.name %></option>
-        <% }) %>
-    </select>
-</div>
-
 <div class="col s12" id="articles">
     <% articles.forEach(function (article) { %>
-        <div class="card horizontal"
-             onclick="apretaste.send({'command': 'DDC HISTORIA', 'data':{'id': '<%= article.id %>'}})">
-            <%
-                var src = "{{APP_IMAGE_PATH}}/" + article.image;
-                if (article.image == "no-image.png") src = "{{APP_SERVICE_PATH}}/images/no-image.png"
-            %>
-            <div class="card-image" style="background-image: url('<%=src %>')">
+        <%
+            var src = "{{APP_IMAGE_PATH}}/" + article.image;
+            if (article.image == "no-image.png") src = "{{APP_SERVICE_PATH}}/images/no-image.png"
+        %>
 
+        <div class="article" onclick="apretaste.send({'command': 'DDC HISTORIA', 'data':{'id': '<%= article.id %>'}})">
+            <div class="center-align">
+                <img src="<%= src %>" alt="articleImg" class="responsive-img">
             </div>
-            <div class="card-stacked">
-                <div class="card-content" style="line-height: 1.2rem">
-                    <span class="article-title"><%= article.title %></span><br>
-                    <small class="grey-ddc" style="display: inline-block; margin: 3px 0">
-                        <i class="material-icons ultra-tiny">calendar_today</i> <%= article.pubDate %> &nbsp;
-                        <i class="material-icons ultra-tiny">person</i> <%= article.author %> &nbsp;
-                        <i class="material-icons ultra-tiny">comment</i> <%= article.comments %>
-                    </small><br>
-                    <small style="color: #7b7b7b"><%= article.description %></small><br>
-                    <span style="display: block; margin-top: 5px">
-                        <% article.tags.forEach(function (tag) { %>
-                            <% if(tag.length < 10){ %>
-                                <div class="chip small"><%= tag %></div>
-                                <!-- onclick="apretaste.send({'command':'DDC TAG', 'data': {'tag': '<%= tag %>'}})" -->
-                            <% } %>
-                        <% }) %>
-                    </span>
-                </div>
-            </div>
+            <h4><%= article.title %></h4>
+            <span class="grey-ddc"><%= article.author %> | <%= article.location %></span>
+            <p><%= article.description %></p>
         </div>
     <% }) %>
 </div>

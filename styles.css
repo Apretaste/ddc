@@ -2,7 +2,7 @@
 	padding: 8px;
 }
 
-#articles .card:not(:first-child){
+#articles .card:not(:first-child) {
 	margin: 2rem 0;
 }
 
@@ -28,24 +28,24 @@
 	background-size: auto 100%;
 }
 
-.select-wrapper{
+.select-wrapper {
 	border: 1px solid lightgray;
 	border-radius: 6px;
 	box-shadow: 0 0 3px lightgrey;
 	padding: 0 0 0 5px;
 }
 
-.select-dropdown{
+.select-dropdown {
 	border-bottom: none !important;
 	margin: 0 !important;
 }
 
-.select-dropdown > li > span{
+.select-dropdown > li > span {
 	color: black;
 	padding: 10px 12px;
 }
 
-#writeModal{
+#writeModal {
 	position: fixed;
 	bottom: 0;
 	z-index: 999;
@@ -53,44 +53,44 @@
 	background: white;
 }
 
-#writeModal textarea{
+#writeModal textarea {
 	width: calc(100% - 28px);
 	border: none;
 	box-shadow: none;
 }
 
-#writeModal > .row{
+#writeModal > .row {
 	height: 100%;
 }
 
-#writeModal > .row > .col{
+#writeModal > .row > .col {
 	height: calc(100% - 40px);
 }
 
-#writeModal > .row > i:first-child{
+#writeModal > .row > i:first-child {
 	position: absolute;
 	top: 10px;
 	right: 10px;
 }
 
-#writeModal .actions{
+#writeModal .actions {
 	position: absolute;
 	width: 100%;
 	padding: 10px;
 	bottom: 0;
 }
 
-#comments .circle{
+#comments .circle {
 	padding: 10px 13px;
 	font-size: 2rem;
 	color: white;
 }
 
-#comments{
+#comments {
 	border: 1px solid white;
 }
 
-#comments li{
+#comments li {
 	min-height: auto;
 	border: none;
 }
@@ -112,23 +112,45 @@
 	margin-bottom: 0px;
 }
 
-.grey-ddc{
+.grey-ddc {
 	color: #666666;
 }
 
-.material-icons.ultra-tiny{
+.material-icons.ultra-tiny {
 	position: relative;
 	top: 1px;
 	font-size: 10px;
 }
 
-.material-icons.tiny{
+.material-icons.tiny {
 	position: relative;
 	top: 2px;
 }
 
-.article-title{
+.article-title-ap {
 	color: #303d44;
 	font-size: 16px;
 	font-weight: 500;
+}
+
+.article {
+	padding: .5rem;
+	font-family: "PlayfairDisplay-Bold", "Times New Roman", Times, Georgia, "DejaVu Serif", serif;
+}
+
+.article img {
+	max-height: 220px;
+}
+
+.article > h4, .article > h3 {
+	color: #303030;
+	font-weight: bold;
+}
+
+.article p {
+	font-size: 16px;
+}
+
+p {
+	margin: .75rem 0;
 }
