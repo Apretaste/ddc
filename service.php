@@ -105,7 +105,7 @@ class Service
 			}
 
 			// get the image if exist
-			$ddcImgDir = TEMP_PATH . "/cache";
+            $ddcImgDir = SHARED_PUBLIC_PATH . "content/ddc";
 			if (!empty($article->image)) {
 				$images[] = "$ddcImgDir/{$article->image}";
 			}
