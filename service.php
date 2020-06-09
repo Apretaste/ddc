@@ -5,7 +5,6 @@ use Apretaste\Level;
 use Apretaste\Request;
 use Apretaste\Response;
 use Framework\Alert;
-use Framework\Crawler;
 use Framework\Database;
 
 class Service
@@ -28,7 +27,7 @@ class Service
 		$ddcApp = $request->input->appName == "ddc" && ($request->input->environment == "app" || $request->input->environment == "email");
 		$serviceImgPath = SERVICE_PATH . "ddc/images";
 		$images = ["$serviceImgPath/diariodecuba-logo.png", "$serviceImgPath/no-image.png"];
-		$ddcImgDir = TEMP_PATH . "/cache";
+		$ddcImgDir = SHARED_PUBLIC_PATH . "content/ddc";
 
 		foreach ($articles as $article) {
 			$article->title = quoted_printable_decode($article->title);
@@ -39,17 +38,14 @@ class Service
 			if (!$inCuba || $ddcApp) {
 				$imgPath = "$ddcImgDir/{$article->image}";
 
-				if (!file_exists($imgPath)) {
-					$image = Crawler::get($article->imageLink, 'GET', null, [], [], $info);
-
-					if ($info['http_code'] ?? 404 === 200)
-						if (!empty($image))
-							file_put_contents($imgPath, $image);
-				} else {
+				$image = '';
+				if (file_exists($imgPath)) {
 					$image = file_get_contents($imgPath);
 				}
 
-				if (!empty($image)) $images[] = $imgPath;
+				if (!empty($image)) {
+					$images[] = $imgPath;
+				}
 			} else {
 				$article->image = "no-image.png";
 			}
@@ -110,7 +106,9 @@ class Service
 
 			// get the image if exist
 			$ddcImgDir = TEMP_PATH . "/cache";
-			if (!empty($article->image)) $images[] = "$ddcImgDir/{$article->image}";
+			if (!empty($article->image)) {
+				$images[] = "$ddcImgDir/{$article->image}";
+			}
 			$template = $ddcApp ? "story.ejs" : "story-ap.ejs";
 
 			// complete the challenge
@@ -195,7 +193,9 @@ class Service
 		if ($articleId) {
 			// check the note ID is valid
 			$article = Database::query("SELECT COUNT(*) AS total FROM _ddc_articles WHERE id='$articleId'");
-			if ($article[0]->total == "0") return;
+			if ($article[0]->total == "0") {
+				return;
+			}
 
 			// save the comment
 			$comment = Database::escape($comment, 255);
