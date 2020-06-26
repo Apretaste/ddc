@@ -1,12 +1,12 @@
 <div class="col s12 article">
-    <h3><%= title %></h3>
-    <span class="grey-ddc"><%= author %> | <%= artLocation %></span>
+    <h2><%= title %></h2>
+    <p class="grey-ddc"><%= author %> | <%= artLocation %></p>
     <p><%= description %></p>
     <% if(image != ""){ %>
         <div class="center-align">
             <img src="{{APP_IMAGE_PATH}}<%= image %>" alt="articleImg" class="responsive-img">
-            <figcaption><%= imageCaption %></figcaption>
         </div>
+        <figcaption><%= imageCaption %></figcaption>
     <% } %>
 
     <section class="grey-ddc">

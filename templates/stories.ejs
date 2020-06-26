@@ -9,7 +9,9 @@
             <div class="center-align">
                 <img src="<%= src %>" alt="articleImg" class="responsive-img">
             </div>
-            <h4><%= article.title %></h4>
+            <figcaption><%= article.imageCaption %></figcaption>
+
+            <h3><%= article.title %></h3>
             <span class="grey-ddc"><%= article.author %> | <%= article.location %></span>
             <p><%= article.description %></p>
         </div>

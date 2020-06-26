@@ -148,12 +148,20 @@
     }
 }
 
-.article > h4, .article > h3 {
+.article > h5, .article > h4, .article > h3, .article > h2 {
     color: #303030;
     font-weight: bold;
 }
 
 .article p {
+    font-size: 18px;
+}
+
+figcaption{
+    font-size: 16px;
+}
+
+span{
     font-size: 16px;
 }
 

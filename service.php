@@ -21,7 +21,7 @@ class Service
 	{
 		$selectedCategory = $request->input->data->category ?? false;
 		$categoryWhere = $selectedCategory ? "WHERE A.category_id = $selectedCategory" : "";
-		$articles = Database::query("SELECT A.id, A.title, A.pubDate, A.author, A.location, A.image, A.imageLink, A.description, A.comments, B.name AS category, A.tags FROM _ddc_articles A LEFT JOIN _ddc_categories B ON A.category_id = B.id $categoryWhere ORDER BY pubDate DESC LIMIT 20");
+		$articles = Database::query("SELECT A.id, A.title, A.pubDate, A.author, A.location, A.image, A.imageLink, A.imageCaption, A.description, A.comments, B.name AS category, A.tags FROM _ddc_articles A LEFT JOIN _ddc_categories B ON A.category_id = B.id $categoryWhere ORDER BY pubDate DESC LIMIT 20");
 
 		$inCuba = $request->input->inCuba ?? false;
 		$ddcApp = $request->input->appName == "ddc" && ($request->input->environment == "app" || $request->input->environment == "email");
@@ -45,7 +45,7 @@ class Service
 
 				if (!empty($image)) {
 					$images[] = $imgPath;
-				}
+				} else $article->image = "no-image.png";
 			} else {
 				$article->image = "no-image.png";
 			}
@@ -61,7 +61,7 @@ class Service
 		$response->setTemplate($template, $content, $images);
 	}
 
-	private static function toEspMonth(String $date)
+	private static function toEspMonth(string $date)
 	{
 		$months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 		$espMonths = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -105,7 +105,7 @@ class Service
 			}
 
 			// get the image if exist
-            $ddcImgDir = SHARED_PUBLIC_PATH . "content/ddc";
+			$ddcImgDir = SHARED_PUBLIC_PATH . "content/ddc";
 			if (!empty($article->image)) {
 				$images[] = "$ddcImgDir/{$article->image}";
 			}
