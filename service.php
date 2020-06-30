@@ -31,6 +31,7 @@ class Service
 
 		foreach ($articles as $article) {
 			$article->title = quoted_printable_decode($article->title);
+			$article->imageCaption = quoted_printable_decode($article->imageCaption);
 			$article->pubDate = self::toEspMonth(date('j F, Y', strtotime($article->pubDate)));
 			$article->tags = explode(',', $article->tags);
 			$article->description = quoted_printable_decode($article->description);
