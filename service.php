@@ -46,7 +46,9 @@ class Service
 
 				if (!empty($image)) {
 					$images[] = $imgPath;
-				} else $article->image = "no-image.png";
+				} else {
+					$article->image = "no-image.png";
+				}
 			} else {
 				$article->image = "no-image.png";
 			}
@@ -206,6 +208,11 @@ class Service
 
 			// add the experience
 			Level::setExperience('NEWS_COMMENT_FIRST_DAILY', $request->person->id);
+
+			// challenges
+			Challenges::track('ddc-5-comment', $request->person->id, 0, static function ($track) {
+				return $track + 1;
+			});
 		} else {
 			Database::query("INSERT INTO _ddc_comments (id_person, content) VALUES ('{$request->person->id}', '$comment')");
 		}
