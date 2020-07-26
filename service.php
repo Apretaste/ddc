@@ -210,8 +210,19 @@ class Service
 			Level::setExperience('NEWS_COMMENT_FIRST_DAILY', $request->person->id);
 
 			// challenges
-			Challenges::track('ddc-5-comment', $request->person->id, 0, static function ($track) {
-				return $track + 1;
+			Challenges::track($request->person->id, 'ddc-5-comment', 0, static function ($track) use ($articleId) {
+				if (!is_array($track)) {
+					$track = [];
+				}
+
+				if ($articleId) {
+					$track[$articleId] = true;
+					if (count($track) >= 5) {
+						return 5;
+					}
+				}
+
+				return $track;
 			});
 		} else {
 			Database::query("INSERT INTO _ddc_comments (id_person, content) VALUES ('{$request->person->id}', '$comment')");
