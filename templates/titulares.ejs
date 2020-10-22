@@ -1,0 +1,20 @@
+<div class="row">
+	<div class="col s12 article">
+		<% articles.forEach(function(item) { %>
+			<div onclick="apretaste.send({'command':'DDC HISTORIA', 'data':{'id':'<%= item.id %>'}})">
+				<div class="center-align">
+					<% var src = (item.image) ? "{{APP_IMAGE_PATH}}/"+item.image : "{{APP_SERVICE_PATH}}/images/no-image.png"; %>
+					<img src="<%= src %>" alt="<%= item.imageCaption %>" class="responsive-img">
+				</div>
+
+				<figcaption><%= item.imageCaption %></figcaption>
+
+				<h3><%= item.title %></h3>
+
+				<span class="grey-ddc"><%= item.author %></span>
+
+				<p><%= item.description %></p>
+			</div>
+		<% }) %>
+	</div>
+</div>

@@ -1,147 +1,107 @@
 <?php
 
-use Apretaste\Challenges;
-use Apretaste\Level;
 use Apretaste\Request;
 use Apretaste\Response;
-use Framework\Alert;
 use Framework\Database;
 
 class Service
 {
 	/**
+	 * Default service
+	 *
+	 * @param Request $request
+	 * @param Response $response
+	 * @author salvipascual
+	 */
+	public function _main (Request $request, Response $response)
+	{
+		return $this->_titulares($request, $response);
+	}
+
+	/**
 	 * Get the list of news
 	 *
 	 * @param Request $request
 	 * @param Response $response
-	 * @throws Alert
 	 * @author salvipascual
 	 */
-	public function _main(Request $request, Response &$response)
+	public function _titulares (Request $request, Response $response)
 	{
-		$articles = Database::query(
-			"
-			SELECT 
-				A.id, A.title, A.pubDate, A.author, A.image, A.imageCaption, A.imageLink, A.media_id,
-				A.description, A.comments, A.tags, B.caption AS categoryCaption
-			FROM _news_articles A 
-			LEFT JOIN _news_categories B ON A.media_id = B.id 
-			WHERE A.media_id = 1
+		// get the articles
+		$articles = Database::queryCache("
+			SELECT id, image, imageCaption, title, author, description
+			FROM _news_articles
+			WHERE media_id = 1
 			ORDER BY pubDate DESC 
-			LIMIT 20"
-		);
+			LIMIT 20");
 
-		$serviceImgPath = SERVICE_PATH . "ddc/images";
-		$images = ["$serviceImgPath/diariodecuba-logo.png", "$serviceImgPath/no-image.png"];
-		$ddcImgDir = SHARED_PUBLIC_PATH . "content/news/ddc/images";
+		// error if data could not be found
+		if(empty($articles)) {
+			return $response->setTemplate('message.ejs');
+		}
 
-		foreach ($articles as $article) {
-			$article->title = quoted_printable_decode($article->title);
-			$article->imageCaption = quoted_printable_decode($article->imageCaption);
-			$article->pubDate = self::toEspMonth(date('j F, Y', strtotime($article->pubDate)));
-			$article->tags = explode(',', $article->tags);
-			$article->description = quoted_printable_decode($article->description);
+		// array of images to send to the view
+		$images = [];
 
-			$imgPath = "$ddcImgDir/{$article->image}";
+		// for all articles ...
+		foreach ($articles as $item) {
+			// decode the strings
+			$item->title = quoted_printable_decode($item->title);
+			$item->imageCaption = quoted_printable_decode($item->imageCaption);
+			$item->description = quoted_printable_decode($item->description);
 
-			$image = '';
-			if (file_exists($imgPath)) {
-				$image = file_get_contents($imgPath);
-			}
+			// create path to the image
+			$imgPath = SHARED_PUBLIC_PATH . "content/news/ddc/images/{$item->image}";
 
-			if (!empty($image)) {
-				$images[] = $imgPath;
-			} else {
-				$article->image = "no-image.png";
-			}
-
+			// set the right image
+			if(file_exists($imgPath)) $images[] = $imgPath;
+			else $item->image = false;
 		}
 
 		// send data to the view
-		$response->setCache(60);
-		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("stories.ejs", ["articles" => $articles], $images);
-	}
-
-	private static function toEspMonth(string $date)
-	{
-		$months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-		$espMonths = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
-		return str_replace($months, $espMonths, $date);
+		$response->setCache('hour');
+		$response->setTemplate("titulares.ejs", ["articles" => $articles], $images);
 	}
 
 	/**
 	 * Call to show the news
 	 *
-	 * @param Request
-	 * @param Response
-	 * @return Response
-	 * @throws Exception
+	 * @param Request $request
+	 * @param Response $response
+	 * @author salvipascual
 	 */
-	public function _historia(Request $request, Response $response)
+	public function _historia (Request $request, Response $response)
 	{
 		// get link to the article
 		$id = $request->input->data->id ?? false;
-		$images[] = SERVICE_PATH . "ddc/images/diariodecuba-logo.png";
 
-		if ($id) {
-			$article = Database::queryCache("
-			SELECT 
-				A.id, A.title, A.pubDate, A.author, A.description, A.media_id, 
-				A.category_id, A.image, A.imageCaption, A.content, A.tags,
-				B.caption AS source, B.name AS mediaName, C.caption AS categoryCaption
-			FROM _news_articles A
-			LEFT JOIN _news_media B ON A.media_id = B.id 
-			LEFT JOIN _news_categories C ON A.category_id = C.id 
-			WHERE A.id = '$id'")[0];
+		// get article from the database
+		$article = Database::queryCache("
+			SELECT title, author, description, image, imageCaption, content
+			FROM _news_articles
+			WHERE id = '$id'")[0];
 
-			$article->title = quoted_printable_decode($article->title);
-			$article->pubDate = self::toEspMonth((date('j F, Y', strtotime($article->pubDate))));
-			$article->tags = explode(',', $article->tags);
-			$article->description = quoted_printable_decode($article->description);
-			$article->content = quoted_printable_decode($article->content);
-			$article->imageCaption = quoted_printable_decode($article->imageCaption);
-			$article->myUsername = $request->person->username;
-
-			// get the image if exist
-			$ddcImgDir = SHARED_PUBLIC_PATH . "content/news/ddc/images";
-			if (!empty($article->image)) {
-				$images[] = "$ddcImgDir/{$article->image}";
-			}
-
-			// complete the challenge
-			Challenges::complete("read-ddc", $request->person->id);
-
-			// send info to the view
-			$response->setCache('30');
-			$response->setLayout('diariodecuba.ejs');
-			$response->setTemplate("story.ejs", $article, $images);
-		} else {
-			return $this->error($response, "Articulo no encontrado", "No sabemos que articulo estas buscando");
+		// error if data could not be found
+		if(empty($article)) {
+			return $response->setTemplate('message.ejs');
 		}
-	}
 
-	/**
-	 * Return an error message
-	 *
-	 * @param Response $response
-	 * @param String $title
-	 * @param String $desc
-	 * @return Response
-	 * @throws Alert
-	 * @author salvipascual
-	 */
-	private function error(Response $response, $title, $desc)
-	{
-		// display show error in the log
-		error_log("[DIARIODECUBA] $title | $desc");
+		// decode the strings
+		$article->title = quoted_printable_decode($article->title);
+		$article->description = quoted_printable_decode($article->description);
+		$article->content = quoted_printable_decode($article->content);
+		$article->imageCaption = quoted_printable_decode($article->imageCaption);
 
-		// send the logo
-		$images[] = SERVICE_PATH . "ddc/images/diariodecuba-logo.png";
+		// create path to the image
+		$imgPath = SHARED_PUBLIC_PATH . "content/news/ddc/images/{$article->image}";
 
-		// return error template
-		$response->setLayout('diariodecuba.ejs');
-		return $response->setTemplate('message.ejs', ["header" => $title, "text" => $desc], $images);
+		// set the right image
+		$images = [];
+		if(file_exists($imgPath)) $images[] = $imgPath;
+		else $article->image = false;
+
+		// send info to the view
+		$response->setCache('year');
+		$response->setTemplate("historia.ejs", $article, $images);
 	}
 }
