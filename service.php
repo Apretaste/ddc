@@ -19,15 +19,21 @@ class Service
 	 */
 	public function _main(Request $request, Response &$response)
 	{
-		$selectedCategory = $request->input->data->category ?? false;
-		$categoryWhere = $selectedCategory ? "WHERE A.category_id = $selectedCategory" : "";
-		$articles = Database::query("SELECT A.id, A.title, A.pubDate, A.author, A.location, A.image, A.imageLink, A.imageCaption, A.description, A.comments, B.name AS category, A.tags FROM _ddc_articles A LEFT JOIN _ddc_categories B ON A.category_id = B.id $categoryWhere ORDER BY pubDate DESC LIMIT 20");
+		$articles = Database::query(
+			"
+			SELECT 
+				A.id, A.title, A.pubDate, A.author, A.image, A.imageCaption, A.imageLink, A.media_id,
+				A.description, A.comments, A.tags, B.caption AS categoryCaption
+			FROM _news_articles A 
+			LEFT JOIN _news_categories B ON A.media_id = B.id 
+			WHERE A.media_id = 1
+			ORDER BY pubDate DESC 
+			LIMIT 20"
+		);
 
-		$inCuba = $request->input->inCuba ?? false;
-		$ddcApp = $request->input->appName == "ddc" && ($request->input->environment == "app" || $request->input->environment == "email");
 		$serviceImgPath = SERVICE_PATH . "ddc/images";
 		$images = ["$serviceImgPath/diariodecuba-logo.png", "$serviceImgPath/no-image.png"];
-		$ddcImgDir = SHARED_PUBLIC_PATH . "content/ddc";
+		$ddcImgDir = SHARED_PUBLIC_PATH . "content/news/ddc/images";
 
 		foreach ($articles as $article) {
 			$article->title = quoted_printable_decode($article->title);
@@ -36,32 +42,25 @@ class Service
 			$article->tags = explode(',', $article->tags);
 			$article->description = quoted_printable_decode($article->description);
 
-			if (!$inCuba || $ddcApp) {
-				$imgPath = "$ddcImgDir/{$article->image}";
+			$imgPath = "$ddcImgDir/{$article->image}";
 
-				$image = '';
-				if (file_exists($imgPath)) {
-					$image = file_get_contents($imgPath);
-				}
+			$image = '';
+			if (file_exists($imgPath)) {
+				$image = file_get_contents($imgPath);
+			}
 
-				if (!empty($image)) {
-					$images[] = $imgPath;
-				} else {
-					$article->image = "no-image.png";
-				}
+			if (!empty($image)) {
+				$images[] = $imgPath;
 			} else {
 				$article->image = "no-image.png";
 			}
+
 		}
-
-		$content = ["articles" => $articles, "selectedCategory" => $selectedCategory];
-
-		$template = $ddcApp ? "stories.ejs" : "stories-ap.ejs";
 
 		// send data to the view
 		$response->setCache(60);
 		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate($template, $content, $images);
+		$response->setTemplate("stories.ejs", ["articles" => $articles], $images);
 	}
 
 	private static function toEspMonth(string $date)
@@ -86,33 +85,30 @@ class Service
 		$id = $request->input->data->id ?? false;
 		$images[] = SERVICE_PATH . "ddc/images/diariodecuba-logo.png";
 
-		$ddcApp = $request->input->appName == "ddc" && ($request->input->environment == "app" || $request->input->environment == "email");
-
 		if ($id) {
-			$article = Database::query("SELECT * FROM _ddc_articles WHERE id='$id'")[0];
+			$article = Database::queryCache("
+			SELECT 
+				A.id, A.title, A.pubDate, A.author, A.description, A.media_id, 
+				A.category_id, A.image, A.imageCaption, A.content, A.tags,
+				B.caption AS source, B.name AS mediaName, C.caption AS categoryCaption
+			FROM _news_articles A
+			LEFT JOIN _news_media B ON A.media_id = B.id 
+			LEFT JOIN _news_categories C ON A.category_id = C.id 
+			WHERE A.id = '$id'")[0];
+
 			$article->title = quoted_printable_decode($article->title);
 			$article->pubDate = self::toEspMonth((date('j F, Y', strtotime($article->pubDate))));
 			$article->tags = explode(',', $article->tags);
 			$article->description = quoted_printable_decode($article->description);
 			$article->content = quoted_printable_decode($article->content);
 			$article->imageCaption = quoted_printable_decode($article->imageCaption);
-			$article->comments = Database::query("SELECT A.*, B.username FROM _ddc_comments A LEFT JOIN person B ON A.id_person = B.id WHERE A.id_article='{$article->id}' ORDER BY A.id DESC");
 			$article->myUsername = $request->person->username;
 
-			// any global var in js named location changes the location of the url
-			$article->artLocation = $article->location;
-			unset($article->location);
-
-			foreach ($article->comments as $comment) {
-				$comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
-			}
-
 			// get the image if exist
-			$ddcImgDir = SHARED_PUBLIC_PATH . "content/ddc";
+			$ddcImgDir = SHARED_PUBLIC_PATH . "content/news/ddc/images";
 			if (!empty($article->image)) {
 				$images[] = "$ddcImgDir/{$article->image}";
 			}
-			$template = $ddcApp ? "story.ejs" : "story-ap.ejs";
 
 			// complete the challenge
 			Challenges::complete("read-ddc", $request->person->id);
@@ -120,7 +116,7 @@ class Service
 			// send info to the view
 			$response->setCache('30');
 			$response->setLayout('diariodecuba.ejs');
-			$response->setTemplate($template, $article, $images);
+			$response->setTemplate("story.ejs", $article, $images);
 		} else {
 			return $this->error($response, "Articulo no encontrado", "No sabemos que articulo estas buscando");
 		}
@@ -147,74 +143,5 @@ class Service
 		// return error template
 		$response->setLayout('diariodecuba.ejs');
 		return $response->setTemplate('message.ejs', ["header" => $title, "text" => $desc], $images);
-	}
-
-	/**
-	 * Watch the last comments in articles or with no article
-	 *
-	 * @param Request $request
-	 * @param Response $response
-	 * @throws Alert
-	 */
-	public function _comentarios(Request $request, Response $response)
-	{
-		$comments = Database::query("SELECT A.*, B.username, C.title, C.pubDate, C.author FROM _ddc_comments A LEFT JOIN person B ON A.id_person = B.id LEFT JOIN _ddc_articles C ON C.id = A.id_article ORDER BY A.id DESC LIMIT 20");
-
-		foreach ($comments as $comment) {
-			$comment->inserted = date('d/m/Y · h:i a', strtotime($comment->inserted));
-			$comment->pubDate = self::toEspMonth(date('j F, Y', strtotime($comment->pubDate)));
-		}
-
-		$images = [SERVICE_PATH . "ddc/images/diariodecuba-logo.png"];
-
-		// send info to the view
-		$response->setLayout('diariodecuba.ejs');
-		$response->setTemplate("comments.ejs", ["comments" => $comments, "myUsername" => $request->person->username], $images);
-	}
-
-	/**
-	 * Comment an article
-	 *
-	 * @param Request $request
-	 * @param Response $response
-	 *
-	 * @throws Exception
-	 * @author ricardo
-	 *
-	 */
-	public function _comentar(Request $request, Response $response)
-	{
-		// do not allow guest comments
-		if ($request->person->isGuest) {
-			return;
-		}
-
-		// get comment data
-		$comment = $request->input->data->comment;
-		$articleId = $request->input->data->article ?? false;
-
-		if ($articleId) {
-			// check the note ID is valid
-			$article = Database::query("SELECT COUNT(*) AS total FROM _ddc_articles WHERE id='$articleId'");
-			if ($article[0]->total == "0") {
-				return;
-			}
-
-			// save the comment
-			$comment = Database::escape($comment, 255);
-			Database::query("
-				INSERT INTO _ddc_comments (id_person, id_article, content) VALUES ('{$request->person->id}', '$articleId', '$comment');
-				UPDATE _ddc_articles SET comments = comments+1 WHERE id='$articleId';");
-
-			// add the experience
-			Level::setExperience('NEWS_COMMENT_FIRST_DAILY', $request->person->id);
-
-			// challenges
-			Challenges::track('ddc-5-comment', $request->person->id, 0, static function ($track) {
-				return $track + 1;
-			});
-		} else {
-			Database::query("INSERT INTO _ddc_comments (id_person, content) VALUES ('{$request->person->id}', '$comment')");
-		}
 	}
 }
