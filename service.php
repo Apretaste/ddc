@@ -1,5 +1,6 @@
 <?php
 
+use Apretaste\Bucket;
 use Apretaste\Request;
 use Apretaste\Response;
 use Framework\Database;
@@ -13,7 +14,7 @@ class Service
 	 * @param Response $response
 	 * @author salvipascual
 	 */
-	public function _main (Request $request, Response $response)
+	public function _main(Request $request, Response $response)
 	{
 		return $this->_titulares($request, $response);
 	}
@@ -23,9 +24,11 @@ class Service
 	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @throws \Apretaste\Alert
+	 * @throws \Framework\Alert
 	 * @author salvipascual
 	 */
-	public function _titulares (Request $request, Response $response)
+	public function _titulares(Request $request, Response $response)
 	{
 		// get the articles
 		$articles = Database::queryCache("
@@ -36,8 +39,9 @@ class Service
 			LIMIT 20");
 
 		// error if data could not be found
-		if(empty($articles)) {
-			return $response->setTemplate('message.ejs');
+		if (empty($articles)) {
+			$response->setTemplate('message.ejs');
+			return;
 		}
 
 		// array of images to send to the view
@@ -51,10 +55,10 @@ class Service
 			$item->description = quoted_printable_decode($item->description);
 
 			// create path to the image
-			$imgPath = SHARED_PUBLIC_PATH . "content/news/ddc/images/{$item->image}";
+			$imgPath = Bucket::get('ddc', $item->image);
 
 			// set the right image
-			if(file_exists($imgPath)) $images[] = $imgPath;
+			if (file_exists($imgPath)) $images[] = $imgPath;
 			else $item->image = false;
 		}
 
@@ -70,7 +74,7 @@ class Service
 	 * @param Response $response
 	 * @author salvipascual
 	 */
-	public function _historia (Request $request, Response $response)
+	public function _historia(Request $request, Response $response)
 	{
 		// get link to the article
 		$id = $request->input->data->id ?? false;
@@ -82,7 +86,7 @@ class Service
 			WHERE id = '$id'")[0];
 
 		// error if data could not be found
-		if(empty($article)) {
+		if (empty($article)) {
 			return $response->setTemplate('message.ejs');
 		}
 
@@ -97,7 +101,7 @@ class Service
 
 		// set the right image
 		$images = [];
-		if(file_exists($imgPath)) $images[] = $imgPath;
+		if (file_exists($imgPath)) $images[] = $imgPath;
 		else $article->image = false;
 
 		// send info to the view
