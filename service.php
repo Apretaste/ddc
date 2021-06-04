@@ -3,7 +3,7 @@
 use Apretaste\Bucket;
 use Apretaste\Request;
 use Apretaste\Response;
-use Framework\Database;
+use Apretaste\Database;
 
 class Service
 {
@@ -96,8 +96,8 @@ class Service
 		$article->content = quoted_printable_decode($article->content);
 		$article->imageCaption = quoted_printable_decode($article->imageCaption);
 
-		// create path to the image
-		$imgPath = SHARED_PUBLIC_PATH . "content/news/ddc/images/{$article->image}";
+		// get path to the image
+		$imgPath = Bucket::get('ddc', $article->image);
 
 		// set the right image
 		$images = [];
