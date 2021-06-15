@@ -55,11 +55,12 @@ class Service
 			$item->description = quoted_printable_decode($item->description);
 
 			// create path to the image
-			$imgPath = Bucket::get('ddc', $item->image);
+			if (!empty($item->image)) {
+				$imgPath = Bucket::get('ddc', $item->image);
 
-			// set the right image
-			if (file_exists($imgPath)) $images[] = $imgPath;
-			else $item->image = false;
+				// set the right image
+				if (file_exists($imgPath)) $images[] = $imgPath;
+			} else $item->image = false;
 		}
 
 		// send data to the view
