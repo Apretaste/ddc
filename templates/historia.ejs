@@ -1,21 +1,21 @@
 <div class="row">
 	<div class="col s12 article">
-		<h2><%= title %></h2>
+		<h2><%- title %></h2>
 
 		<p class="grey-ddc"><%= author %></p>
 
-		<p><%= description %></p>
+		<p><%- description %></p>
 
 		<% if(image){ %>
 			<div class="center-align">
 				<img src="{{APP_IMAGE_PATH}}<%= image %>" alt="<%= imageCaption %>" class="responsive-img">
 			</div>
-			<figcaption><%= imageCaption %></figcaption>
+			<figcaption><%- imageCaption %></figcaption>
 		<% } %>
 
 		<section class="grey-ddc">
 			<% content.split("\\n\\n").forEach(function(paragraph){ %>
-				<p><%= paragraph %></p>
+				<p><%- paragraph %></p>
 			<% }) %>
 		</section>
 	</div>

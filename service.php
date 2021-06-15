@@ -52,7 +52,7 @@ class Service
 			// decode the strings
 			$item->title = quoted_printable_decode($item->title);
 			$item->imageCaption = quoted_printable_decode($item->imageCaption);
-			$item->description = quoted_printable_decode($item->description);
+			$item->description = quoted_printable_decode(strip_tags($item->description));
 
 			// create path to the image
 			if (!empty($item->image)) {

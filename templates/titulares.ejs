@@ -7,13 +7,13 @@
 					<img src="<%= src %>" alt="<%= item.imageCaption %>" class="responsive-img">
 				</div>
 
-				<figcaption><%= item.imageCaption %></figcaption>
+				<figcaption><%- item.imageCaption %></figcaption>
 
-				<h3><%= item.title %></h3>
+				<h3><%- item.title %></h3>
 
-				<span class="grey-ddc"><%= item.author %></span>
+				<span class="grey-ddc"><%- item.author %></span>
 
-				<p><%= item.description %></p>
+				<p><%- item.description %></p>
 			</div>
 		<% }) %>
 	</div>
